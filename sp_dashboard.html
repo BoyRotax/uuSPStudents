@@ -15,8 +15,15 @@
         .nav-tabs .nav-link { color: #64748b; font-weight: 600; border-radius: 10px 10px 0 0; }
         .nav-tabs .nav-link.active { color: #4f46e5; background-color: #f8fafc; border-bottom: 2px solid #f8fafc; }
         .card-box { background: white; border-radius: 0 15px 15px 15px; border: 1px solid #dee2e6; border-top: none; }
+        
         .badge-tk { background-color: #10b981; color: white; }
         .badge-ex { background-color: #f59e0b; color: white; }
+        
+        /* สไตล์การ์ดสรุปยอด */
+        .summary-card { border-radius: 15px; border: none; padding: 20px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .summary-card h6 { opacity: 0.9; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
+        .summary-card h2 { font-weight: 800; font-size: 36px; margin-bottom: 5px; }
+        .summary-card .small-text { background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px; font-size: 13px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -55,24 +62,51 @@
             <div class="tab-content card-box p-4" id="myTabContent">
                 
                 <div class="tab-pane fade show active" id="list" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-dark">นักเรียนที่ลงทะเบียนแล้ว</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="summary-card bg-primary text-center">
+                                <h6><i class="fas fa-users"></i> นักเรียนทั้งหมด</h6>
+                                <h2 id="sumTotalCount">0 <span class="fs-6 fw-normal">คน</span></h2>
+                                <div class="small-text"><i class="fas fa-coins"></i> ยอดเงินคาดหวัง: <b id="sumExpectedRev">0</b> บาท</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card bg-success text-center">
+                                <h6><i class="fas fa-check-circle"></i> ชำระเงินแล้ว</h6>
+                                <h2 id="sumPaidCount">0 <span class="fs-6 fw-normal">คน</span></h2>
+                                <div class="small-text"><i class="fas fa-wallet"></i> รับเงินแล้ว: <b id="sumCollectedRev">0</b> บาท</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card bg-danger text-center">
+                                <h6><i class="fas fa-exclamation-circle"></i> ยังไม่ชำระเงิน</h6>
+                                <h2 id="sumUnpaidCount">0 <span class="fs-6 fw-normal">คน</span></h2>
+                                <div class="small-text"><i class="fas fa-hand-holding-usd"></i> ยอดค้างชำระ: <b id="sumPendingRev">0</b> บาท</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-4">
+                        <h5 class="fw-bold text-dark mb-0">ตารางรายชื่อนักเรียน</h5>
                         <button class="btn btn-outline-primary btn-sm" onclick="loadSpecialStudents()"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
                     </div>
+                    
                     <div class="table-responsive">
                         <table class="table table-hover align-middle text-center">
                             <thead class="table-light">
                                 <tr>
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
-                                    <th class="text-start">ชื่อ-สกุล</th>
+                                    <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
+                                    <th>ระดับชั้น</th>
                                     <th>เวลาเรียน</th>
                                     <th>สถานะ</th>
                                     <th>สลิปโอนเงิน</th>
                                 </tr>
                             </thead>
                             <tbody id="spStudentBody">
-                                <tr><td colspan="6" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -128,11 +162,15 @@
                                 <input type="text" id="exName" class="form-control" placeholder="เช่น เด็กหญิงใจดี รักเรียน">
                             </div>
                             <div class="mb-3">
+                                <label class="form-label fw-bold">ชื่อเล่น</label>
+                                <input type="text" id="exNick" class="form-control" placeholder="เช่น น้องใจดี">
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label fw-bold">ระดับชั้น / อายุ <span class="text-danger">*</span></label>
                                 <input type="text" id="exClass" class="form-control" placeholder="เช่น อนุบาล 2 หรือ อายุ 4 ขวบ">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold">เบอร์โทรติดต่อผู้ปกครอง <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">เบอร์โทรติดต่อ <span class="text-danger">*</span></label>
                                 <input type="text" id="exTel" class="form-control" placeholder="08X-XXX-XXXX">
                             </div>
                         </div>
@@ -233,7 +271,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ ⚠️⚠️
+    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec'; 
 
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
@@ -242,7 +280,6 @@
 
     $(document).ready(function() { loadSpecialStudents(); });
 
-    // ฟังก์ชันช่วยแปลงรูปเป็น Base64
     function getBase64(file) {
         return new Promise((resolve, reject) => {
             if(!file) { resolve(""); return; }
@@ -253,35 +290,71 @@
         });
     }
 
+    // ================= 1. โหลดข้อมูลนักเรียนและคำนวณยอดเงิน =================
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
                 const tbody = document.getElementById('spStudentBody');
                 tbody.innerHTML = '';
+                
+                // ตัวแปรสำหรับคำนวณยอด
+                let tCount = 0, pCount = 0, uCount = 0;
+                let tRev = 0, pRev = 0, uRev = 0;
+
                 if(!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
-                    return;
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                } else {
+                    data.forEach(s => {
+                        // 🌟 ดึงราคาออกมาจาก TimeSlot
+                        let price = 0;
+                        if(s.TimeSlot && s.TimeSlot.includes('400')) price = 400;
+                        else if(s.TimeSlot && s.TimeSlot.includes('500')) price = 500;
+                        else if(s.TimeSlot && s.TimeSlot.includes('600')) price = 600;
+
+                        // คำนวณสถิติ
+                        tCount++;
+                        tRev += price;
+                        if (s.PaymentStatus === 'ชำระแล้ว') {
+                            pCount++; pRev += price;
+                        } else {
+                            uCount++; uRev += price;
+                        }
+
+                        // แสดงผลตาราง (เพิ่มชื่อเล่นให้โดดเด่น)
+                        const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
+                        const payBadge = s.PaymentStatus === "ชำระแล้ว" ? '<span class="badge bg-success">ชำระแล้ว</span>' : '<span class="badge bg-danger">ยังไม่ชำระ</span>';
+                        const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-invoice"></i> สลิป</a>` : '-';
+                        const nickNameTag = s.NickName ? `<span class="badge bg-light text-primary border ms-1">น้อง${s.NickName}</span>` : '';
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="fw-bold">${s.StudentId}</td>
+                                <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
+                                <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
+                                <td>${s.ClassLevel} ${s.Room && s.Room !== '-' ? '(ห้อง '+s.Room+')' : ''}</td>
+                                <td class="text-primary fw-bold" style="font-size: 14px;">${s.TimeSlot || '-'}</td>
+                                <td>${payBadge}</td>
+                                <td>${slipBtn}</td>
+                            </tr>
+                        `;
+                    });
                 }
-                data.forEach(s => {
-                    const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
-                    const payBadge = s.PaymentStatus === "ชำระแล้ว" ? '<span class="badge bg-success">ชำระแล้ว</span>' : '<span class="badge bg-danger">ยังไม่ชำระ</span>';
-                    const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-invoice"></i> ดูสลิป</a>` : '-';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="fw-bold">${s.StudentId}</td>
-                            <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
-                            <td class="text-start fw-bold">${s.FullName} <br><small class="text-muted">(${s.ClassLevel})</small></td>
-                            <td class="text-primary fw-bold" style="font-size: 14px;">${s.TimeSlot || '-'}</td>
-                            <td>${payBadge}</td>
-                            <td>${slipBtn}</td>
-                        </tr>
-                    `;
-                });
+
+                // อัปเดตตัวเลขลงการ์ด (ใส่ลูกน้ำคั่นหลักพันให้สวยงาม)
+                document.getElementById('sumTotalCount').innerHTML = `${tCount} <span class="fs-6 fw-normal">คน</span>`;
+                document.getElementById('sumExpectedRev').innerText = tRev.toLocaleString();
+                
+                document.getElementById('sumPaidCount').innerHTML = `${pCount} <span class="fs-6 fw-normal">คน</span>`;
+                document.getElementById('sumCollectedRev').innerText = pRev.toLocaleString();
+                
+                document.getElementById('sumUnpaidCount').innerHTML = `${uCount} <span class="fs-6 fw-normal">คน</span>`;
+                document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
+
             }).catch(err => console.error(err));
     }
 
+    // ================= 2. ดึงเด็กจาก ศพด. เดิม =================
     function fetchTkStudents() {
         const cls = document.getElementById('filterClass').value;
         const rm = document.getElementById('filterRoom').value;
@@ -329,7 +402,7 @@
         document.getElementById('mdlClass').value = cls;
         document.getElementById('mdlRoom').value = rm;
         document.getElementById('mdlTel').value = tel;
-        document.getElementById('mdlSlip').value = ''; // เคลียร์ไฟล์
+        document.getElementById('mdlSlip').value = ''; 
         
         var modal = new bootstrap.Modal(document.getElementById('regModal'));
         modal.show();
@@ -365,6 +438,7 @@
     // ยืนยันบันทึกเด็กนอก
     async function registerExternal() {
         const fullName = document.getElementById('exName').value.trim();
+        const nickName = document.getElementById('exNick').value.trim();
         const classLvl = document.getElementById('exClass').value.trim();
         const tel = document.getElementById('exTel').value.trim();
 
@@ -381,7 +455,7 @@
 
         const payload = {
             fullName: fullName,
-            nickName: "", 
+            nickName: nickName, 
             classLevel: classLvl,
             studentType: 'เด็กภายนอก',
             tel: tel,
@@ -392,6 +466,7 @@
 
         sendPayloadToServer(payload, btn, '<i class="fas fa-save"></i> บันทึกข้อมูลเด็กภายนอก', () => {
             document.getElementById('exName').value = '';
+            document.getElementById('exNick').value = '';
             document.getElementById('exClass').value = '';
             document.getElementById('exTel').value = '';
             document.getElementById('exSlip').value = '';
