@@ -12,11 +12,9 @@
         .sidebar { background: #312e81; color: white; min-height: 100vh; padding-top: 20px; }
         .sidebar a { color: #c7d2fe; text-decoration: none; padding: 12px 20px; display: block; font-weight: 600; transition: 0.3s; }
         .sidebar a:hover, .sidebar a.active { color: white; background: #4338ca; border-left: 4px solid #818cf8; }
-        
         .nav-tabs .nav-link { color: #64748b; font-weight: 600; border-radius: 10px 10px 0 0; }
-        .nav-tabs .nav-link.active { color: #4f46e5; border-color: #dee2e6 #dee2e6 #f8fafc; background-color: #f8fafc; border-bottom: 2px solid #f8fafc; }
-        .card-box { background: white; border-radius: 0 15px 15px 15px; border: 1px solid #dee2e6; border-top: none; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        
+        .nav-tabs .nav-link.active { color: #4f46e5; background-color: #f8fafc; border-bottom: 2px solid #f8fafc; }
+        .card-box { background: white; border-radius: 0 15px 15px 15px; border: 1px solid #dee2e6; border-top: none; }
         .badge-tk { background-color: #10b981; color: white; }
         .badge-ex { background-color: #f59e0b; color: white; }
     </style>
@@ -24,9 +22,7 @@
 <body>
 
 <script>
-    if (sessionStorage.getItem('isSpLoggedIn') !== 'true') {
-        window.location.href = 'index.html';
-    }
+    if (sessionStorage.getItem('isSpLoggedIn') !== 'true') { window.location.href = 'index.html'; }
 </script>
 
 <div class="container-fluid">
@@ -51,21 +47,9 @@
             </div>
 
             <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab">
-                        <i class="fas fa-users me-1"></i> รายชื่อเด็กที่เรียนพิเศษ
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="add-tk-tab" data-bs-toggle="tab" data-bs-target="#add-tk" type="button" role="tab">
-                        <i class="fas fa-search-plus me-1"></i> ดึงข้อมูลจาก ศพด. เดิม
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="add-ex-tab" data-bs-toggle="tab" data-bs-target="#add-ex" type="button" role="tab">
-                        <i class="fas fa-user-plus me-1"></i> เพิ่มเด็กจากภายนอก
-                    </button>
-                </li>
+                <li class="nav-item"><button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button"><i class="fas fa-users me-1"></i> รายชื่อเด็กที่เรียนพิเศษ</button></li>
+                <li class="nav-item"><button class="nav-link" id="add-tk-tab" data-bs-toggle="tab" data-bs-target="#add-tk" type="button"><i class="fas fa-search-plus me-1"></i> ดึงข้อมูลจาก ศพด. เดิม</button></li>
+                <li class="nav-item"><button class="nav-link" id="add-ex-tab" data-bs-toggle="tab" data-bs-target="#add-ex" type="button"><i class="fas fa-user-plus me-1"></i> เพิ่มเด็กจากภายนอก</button></li>
             </ul>
 
             <div class="tab-content card-box p-4" id="myTabContent">
@@ -76,15 +60,15 @@
                         <button class="btn btn-outline-primary btn-sm" onclick="loadSpecialStudents()"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle text-center">
                             <thead class="table-light">
                                 <tr>
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
-                                    <th>ชื่อ-สกุล</th>
-                                    <th>ชื่อเล่น</th>
+                                    <th class="text-start">ชื่อ-สกุล</th>
                                     <th>ระดับชั้น</th>
                                     <th>เบอร์โทร</th>
+                                    <th class="text-primary">เวลาเรียน</th>
                                 </tr>
                             </thead>
                             <tbody id="spStudentBody">
@@ -127,7 +111,7 @@
                                     <th>รหัส</th>
                                     <th class="text-start">ชื่อ-สกุล</th>
                                     <th>ระดับชั้น</th>
-                                    <th>จัดการ</th>
+                                    <th style="min-width: 200px;">เลือกรอบเวลาเรียน</th>
                                 </tr>
                             </thead>
                             <tbody id="tkStudentBody"></tbody>
@@ -136,7 +120,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="add-ex" role="tabpanel">
-                    <h5 class="fw-bold text-dark mb-3">ลงทะเบียนนักเรียนภายนอก (ไม่ได้เรียนใน ศพด.)</h5>
+                    <h5 class="fw-bold text-dark mb-3">ลงทะเบียนนักเรียนภายนอก</h5>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -144,16 +128,20 @@
                                 <input type="text" id="exName" class="form-control" placeholder="เช่น เด็กหญิงใจดี รักเรียน">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold">ชื่อเล่น</label>
-                                <input type="text" id="exNick" class="form-control" placeholder="เช่น น้องใจดี">
-                            </div>
-                            <div class="mb-3">
                                 <label class="form-label fw-bold">ระดับชั้น / อายุ <span class="text-danger">*</span></label>
                                 <input type="text" id="exClass" class="form-control" placeholder="เช่น อนุบาล 2 หรือ อายุ 4 ขวบ">
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label class="form-label fw-bold">เบอร์โทรติดต่อผู้ปกครอง <span class="text-danger">*</span></label>
                                 <input type="text" id="exTel" class="form-control" placeholder="08X-XXX-XXXX">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-primary">เลือกรอบเวลาเรียน <span class="text-danger">*</span></label>
+                                <select id="exTimeSlot" class="form-select border-primary">
+                                    <option value="จ.-พฤ. 14:30 - 15:30">จันทร์ - พฤหัส (14:30 - 15:30)</option>
+                                    <option value="จ.-พฤ. 17:00 - 18:00">จันทร์ - พฤหัส (17:00 - 18:00)</option>
+                                    <option value="ส. 09:00 - 11:00">เสาร์ (09:00 - 11:00)</option>
+                                </select>
                             </div>
                             <button class="btn btn-warning fw-bold w-100" onclick="registerExternal()">
                                 <i class="fas fa-save"></i> บันทึกข้อมูลเด็กภายนอก
@@ -172,29 +160,22 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ⚠️ ใส่ลิงก์ Google Script เดิมของคุณที่นี่ ⚠️
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/execc'; 
+    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec'; 
 
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
 
-    function logout() {
-        sessionStorage.clear();
-        window.location.href = 'index.html';
-    }
+    function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-    // โหลดรายชื่อเรียนพิเศษตั้งแต่เปิดหน้า
-    $(document).ready(function() {
-        loadSpecialStudents();
-    });
+    $(document).ready(function() { loadSpecialStudents(); });
 
-    // ================= 1. โหลดเด็กที่ลงเรียนพิเศษแล้ว =================
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
                 const tbody = document.getElementById('spStudentBody');
                 tbody.innerHTML = '';
-                if(data.length === 0) {
+                if(!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
                     return;
                 }
@@ -204,17 +185,19 @@
                         <tr>
                             <td class="fw-bold">${s.StudentId}</td>
                             <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
-                            <td class="text-primary fw-bold">${s.FullName}</td>
-                            <td>${s.NickName}</td>
+                            <td class="text-start fw-bold">${s.FullName} <br><small class="text-muted">(${s.NickName})</small></td>
                             <td>${s.ClassLevel} ${s.Room && s.Room !== '-' ? '(ห้อง '+s.Room+')' : ''}</td>
                             <td>${s.Tel}</td>
+                            <td class="text-primary fw-bold">${s.TimeSlot || '-'}</td>
                         </tr>
                     `;
                 });
-            }).catch(err => console.error(err));
+            }).catch(err => {
+                console.error("Error loading students:", err);
+                document.getElementById('spStudentBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">ไม่สามารถดึงข้อมูลได้ (เช็ค URL หลังบ้าน)</td></tr>';
+            });
     }
 
-    // ================= 2. ดึงเด็กจาก ศพด. เดิม =================
     function fetchTkStudents() {
         const cls = document.getElementById('filterClass').value;
         const rm = document.getElementById('filterRoom').value;
@@ -231,28 +214,23 @@
                 
                 if(filtered.length === 0) {
                     Swal.fire('ไม่พบข้อมูล', 'ไม่มีนักเรียนในห้องนี้', 'info');
+                    document.getElementById('tkSearchTable').classList.add('d-none');
                     return;
                 }
 
                 filtered.forEach(s => {
-                    // สร้าง Object ข้อมูลเตรียมส่ง
-                    const payload = encodeURIComponent(JSON.stringify({
-                        studentId: s.StudentId,
-                        fullName: s.FullName,
-                        nickName: s.NickName,
-                        classLevel: s.ClassLevel,
-                        room: s.Room,
-                        studentType: 'เด็กใน ศพด.',
-                        tel: s.FatherTel || s.MotherTel || '-'
-                    }));
-
                     tbody.innerHTML += `
                         <tr>
                             <td>${s.StudentId}</td>
                             <td class="text-start fw-bold">${s.FullName}</td>
                             <td>${s.ClassLevel}</td>
                             <td>
-                                <button class="btn btn-sm btn-success fw-bold" onclick="registerInternal('${payload}', this)">
+                                <select id="time_${s.StudentId}" class="form-select form-select-sm mb-2 border-primary">
+                                    <option value="จ.-พฤ. 14:30 - 15:30">จ.-พฤ. 14:30 - 15:30</option>
+                                    <option value="จ.-พฤ. 17:00 - 18:00">จ.-พฤ. 17:00 - 18:00</option>
+                                    <option value="ส. 09:00 - 11:00">ส. 09:00 - 11:00</option>
+                                </select>
+                                <button class="btn btn-sm btn-success fw-bold w-100" onclick="registerInternal('${s.StudentId}', '${s.FullName}', '${s.NickName}', '${s.ClassLevel}', '${s.Room}', '${s.FatherTel || s.MotherTel || '-'}', this)">
                                     <i class="fas fa-plus"></i> เพิ่มเข้าเรียนพิเศษ
                                 </button>
                             </td>
@@ -261,25 +239,41 @@
                 });
                 document.getElementById('tkSearchTable').classList.remove('d-none');
                 Swal.close();
-            }).catch(err => Swal.fire('ผิดพลาด', 'ดึงข้อมูลไม่ได้', 'error'));
+            }).catch(err => {
+                Swal.fire('ผิดพลาด', 'ดึงข้อมูลไม่ได้ กรุณาตรวจสอบ URL หรือการตั้งค่า Deployment', 'error');
+                console.error(err);
+            });
     }
 
-    // ================= 3. บันทึกเด็กลงเรียนพิเศษ (Internal) =================
-    function registerInternal(payloadStr, btnElem) {
+    function registerInternal(sId, fName, nName, cls, rm, tel, btnElem) {
+        // 🌟 ดึงค่าเวลาที่เลือกจาก Dropdown มา
+        const selectedTime = document.getElementById(`time_${sId}`).value;
+        
+        const payload = {
+            studentId: sId,
+            fullName: fName,
+            nickName: nName,
+            classLevel: cls,
+            room: rm,
+            studentType: 'เด็กใน ศพด.',
+            tel: tel,
+            timeSlot: selectedTime
+        };
+
         btnElem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> รอสักครู่...';
         btnElem.disabled = true;
         
         fetch(scriptURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=saveSpecialStudent&data=' + payloadStr
+            body: 'action=saveSpecialStudent&data=' + encodeURIComponent(JSON.stringify(payload))
         })
         .then(res => res.json())
         .then(data => {
             if(data.status === "success") {
                 btnElem.classList.replace('btn-success', 'btn-secondary');
                 btnElem.innerHTML = '<i class="fas fa-check"></i> ลงทะเบียนแล้ว';
-                loadSpecialStudents(); // โหลดหน้าตารางหลักใหม่
+                loadSpecialStudents();
                 Swal.fire({ icon: 'success', title: 'เพิ่มสำเร็จ', timer: 1500, showConfirmButton: false });
             } else {
                 Swal.fire('แจ้งเตือน', data.msg, 'error');
@@ -289,19 +283,18 @@
         });
     }
 
-    // ================= 4. บันทึกเด็กภายนอก (External) =================
     function registerExternal() {
         const payload = {
             fullName: document.getElementById('exName').value.trim(),
-            nickName: document.getElementById('exNick').value.trim(),
+            nickName: "", 
             classLevel: document.getElementById('exClass').value.trim(),
             studentType: 'เด็กภายนอก',
-            tel: document.getElementById('exTel').value.trim()
+            tel: document.getElementById('exTel').value.trim(),
+            timeSlot: document.getElementById('exTimeSlot').value // 🌟 ดึงเวลาที่เลือกมา
         };
 
         if(!payload.fullName || !payload.classLevel || !payload.tel) {
-            Swal.fire('กรอกข้อมูลไม่ครบ', 'กรุณากรอกช่องที่มีเครื่องหมาย * ให้ครบถ้วนครับ', 'warning');
-            return;
+            return Swal.fire('กรอกข้อมูลไม่ครบ', 'กรุณากรอกช่องที่มีเครื่องหมาย * ให้ครบถ้วนครับ', 'warning');
         }
 
         Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => { Swal.showLoading() }});
@@ -315,14 +308,11 @@
         .then(data => {
             if(data.status === "success") {
                 Swal.fire('สำเร็จ!', 'บันทึกเด็กภายนอกเข้าระบบแล้ว (รหัส EX จะถูกสร้างอัตโนมัติ)', 'success');
-                // เคลียร์ฟอร์ม
                 document.getElementById('exName').value = '';
-                document.getElementById('exNick').value = '';
                 document.getElementById('exClass').value = '';
                 document.getElementById('exTel').value = '';
                 
-                loadSpecialStudents(); // อัปเดตตารางหน้าแรก
-                // สลับกลับไปหน้าแรกให้ดู
+                loadSpecialStudents();
                 var triggerEl = document.querySelector('#myTab button[data-bs-target="#list"]');
                 bootstrap.Tab.getInstance(triggerEl).show();
             } else {
