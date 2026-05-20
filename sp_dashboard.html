@@ -66,9 +66,9 @@
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
                                     <th class="text-start">ชื่อ-สกุล</th>
-                                    <th>ระดับชั้น</th>
-                                    <th>เบอร์โทร</th>
-                                    <th class="text-primary">เวลาเรียน</th>
+                                    <th>เวลาเรียน</th>
+                                    <th>สถานะ</th>
+                                    <th>สลิปโอนเงิน</th>
                                 </tr>
                             </thead>
                             <tbody id="spStudentBody">
@@ -111,7 +111,7 @@
                                     <th>รหัส</th>
                                     <th class="text-start">ชื่อ-สกุล</th>
                                     <th>ระดับชั้น</th>
-                                    <th style="min-width: 200px;">เลือกรอบเวลาเรียน</th>
+                                    <th>จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody id="tkStudentBody"></tbody>
@@ -135,15 +135,35 @@
                                 <label class="form-label fw-bold">เบอร์โทรติดต่อผู้ปกครอง <span class="text-danger">*</span></label>
                                 <input type="text" id="exTel" class="form-control" placeholder="08X-XXX-XXXX">
                             </div>
-                            <div class="mb-4">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label class="form-label fw-bold text-primary">เลือกรอบเวลาเรียน <span class="text-danger">*</span></label>
                                 <select id="exTimeSlot" class="form-select border-primary">
-                                    <option value="จ.-พฤ. 14:30 - 15:30">จันทร์ - พฤหัส (14:30 - 15:30)</option>
-                                    <option value="จ.-พฤ. 17:00 - 18:00">จันทร์ - พฤหัส (17:00 - 18:00)</option>
-                                    <option value="ส. 09:00 - 11:00">เสาร์ (09:00 - 11:00)</option>
+                                    <option value="จ.-พฤ. 14:30 - 15:30 (400 บ.)">จันทร์ - พฤหัส (14:30 - 15:30) - 400 บ./เดือน</option>
+                                    <option value="จ.-พฤ. 17:00 - 18:00 (600 บ.)">จันทร์ - พฤหัส (17:00 - 18:00) - 600 บ./เดือน</option>
+                                    <option value="จ.-พฤ. 14:30 - 18:00 (600 บ.)">จันทร์ - พฤหัส (14:30 - 18:00) - 600 บ./เดือน</option>
+                                    <option value="ส. 09:00 - 11:30 (500 บ.)">เสาร์ (09:00 - 11:30) - 500 บ./เดือน</option>
                                 </select>
                             </div>
-                            <button class="btn btn-warning fw-bold w-100" onclick="registerExternal()">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">สถานะการชำระเงิน <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="exPayStatus" id="exPay1" value="ชำระแล้ว">
+                                        <label class="form-check-label text-success fw-bold" for="exPay1">ชำระแล้ว</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="exPayStatus" id="exPay2" value="ยังไม่ชำระ" checked>
+                                        <label class="form-check-label text-danger fw-bold" for="exPay2">ยังไม่ชำระ</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">อัปโหลดสลิปโอนเงิน (ถ้ามี)</label>
+                                <input type="file" id="exSlip" class="form-control" accept="image/*">
+                            </div>
+                            <button class="btn btn-warning fw-bold w-100 btn-lg" onclick="registerExternal()" id="btnExSave">
                                 <i class="fas fa-save"></i> บันทึกข้อมูลเด็กภายนอก
                             </button>
                         </div>
@@ -155,12 +175,65 @@
     </div>
 </div>
 
+<div class="modal fade" id="regModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="fas fa-user-plus"></i> เพิ่มเข้าเรียนพิเศษ</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-1 text-muted small">กำลังทำรายการให้:</p>
+        <h5 id="mdlName" class="fw-bold text-primary mb-3">-</h5>
+        
+        <input type="hidden" id="mdlId">
+        <input type="hidden" id="mdlNick">
+        <input type="hidden" id="mdlClass">
+        <input type="hidden" id="mdlRoom">
+        <input type="hidden" id="mdlTel">
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">เลือกรอบเวลาเรียน <span class="text-danger">*</span></label>
+            <select id="mdlTime" class="form-select border-primary">
+                <option value="จ.-พฤ. 14:30 - 15:30 (400 บ.)">จันทร์ - พฤหัส (14:30 - 15:30) - 400 บ./เดือน</option>
+                <option value="จ.-พฤ. 17:00 - 18:00 (600 บ.)">จันทร์ - พฤหัส (17:00 - 18:00) - 600 บ./เดือน</option>
+                <option value="จ.-พฤ. 14:30 - 18:00 (600 บ.)">จันทร์ - พฤหัส (14:30 - 18:00) - 600 บ./เดือน</option>
+                <option value="ส. 09:00 - 11:30 (500 บ.)">เสาร์ (09:00 - 11:30) - 500 บ./เดือน</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">สถานะการชำระเงิน <span class="text-danger">*</span></label>
+            <div class="d-flex gap-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="mdlPayStatus" id="mdlPay1" value="ชำระแล้ว">
+                    <label class="form-check-label text-success fw-bold" for="mdlPay1">ชำระแล้ว</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="mdlPayStatus" id="mdlPay2" value="ยังไม่ชำระ" checked>
+                    <label class="form-check-label text-danger fw-bold" for="mdlPay2">ยังไม่ชำระ</label>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">อัปโหลดสลิปโอนเงิน (ถ้ามี)</label>
+            <input type="file" id="mdlSlip" class="form-control" accept="image/*">
+            <small class="text-muted">ไฟล์ภาพเท่านั้น (ใช้เวลาบันทึกสักครู่)</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-success fw-bold" id="btnMdlSave" onclick="confirmInternalReg()">ยืนยันการบันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
+    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ ⚠️⚠️
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec'; 
 
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
@@ -168,6 +241,17 @@
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
     $(document).ready(function() { loadSpecialStudents(); });
+
+    // ฟังก์ชันช่วยแปลงรูปเป็น Base64
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            if(!file) { resolve(""); return; }
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
 
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
@@ -181,21 +265,21 @@
                 }
                 data.forEach(s => {
                     const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
+                    const payBadge = s.PaymentStatus === "ชำระแล้ว" ? '<span class="badge bg-success">ชำระแล้ว</span>' : '<span class="badge bg-danger">ยังไม่ชำระ</span>';
+                    const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="btn btn-sm btn-outline-info"><i class="fas fa-file-invoice"></i> ดูสลิป</a>` : '-';
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td class="fw-bold">${s.StudentId}</td>
                             <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
-                            <td class="text-start fw-bold">${s.FullName} <br><small class="text-muted">(${s.NickName})</small></td>
-                            <td>${s.ClassLevel} ${s.Room && s.Room !== '-' ? '(ห้อง '+s.Room+')' : ''}</td>
-                            <td>${s.Tel}</td>
-                            <td class="text-primary fw-bold">${s.TimeSlot || '-'}</td>
+                            <td class="text-start fw-bold">${s.FullName} <br><small class="text-muted">(${s.ClassLevel})</small></td>
+                            <td class="text-primary fw-bold" style="font-size: 14px;">${s.TimeSlot || '-'}</td>
+                            <td>${payBadge}</td>
+                            <td>${slipBtn}</td>
                         </tr>
                     `;
                 });
-            }).catch(err => {
-                console.error("Error loading students:", err);
-                document.getElementById('spStudentBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">ไม่สามารถดึงข้อมูลได้ (เช็ค URL หลังบ้าน)</td></tr>';
-            });
+            }).catch(err => console.error(err));
     }
 
     function fetchTkStudents() {
@@ -225,13 +309,8 @@
                             <td class="text-start fw-bold">${s.FullName}</td>
                             <td>${s.ClassLevel}</td>
                             <td>
-                                <select id="time_${s.StudentId}" class="form-select form-select-sm mb-2 border-primary">
-                                    <option value="จ.-พฤ. 14:30 - 15:30">จ.-พฤ. 14:30 - 15:30</option>
-                                    <option value="จ.-พฤ. 17:00 - 18:00">จ.-พฤ. 17:00 - 18:00</option>
-                                    <option value="ส. 09:00 - 11:00">ส. 09:00 - 11:00</option>
-                                </select>
-                                <button class="btn btn-sm btn-success fw-bold w-100" onclick="registerInternal('${s.StudentId}', '${s.FullName}', '${s.NickName}', '${s.ClassLevel}', '${s.Room}', '${s.FatherTel || s.MotherTel || '-'}', this)">
-                                    <i class="fas fa-plus"></i> เพิ่มเข้าเรียนพิเศษ
+                                <button class="btn btn-sm btn-success fw-bold" onclick="openRegModal('${s.StudentId}', '${s.FullName}', '${s.NickName}', '${s.ClassLevel}', '${s.Room}', '${s.FatherTel || s.MotherTel || '-'}')">
+                                    <i class="fas fa-plus"></i> ลงทะเบียน
                                 </button>
                             </td>
                         </tr>
@@ -239,66 +318,89 @@
                 });
                 document.getElementById('tkSearchTable').classList.remove('d-none');
                 Swal.close();
-            }).catch(err => {
-                Swal.fire('ผิดพลาด', 'ดึงข้อมูลไม่ได้ กรุณาตรวจสอบ URL หรือการตั้งค่า Deployment', 'error');
-                console.error(err);
             });
     }
 
-    function registerInternal(sId, fName, nName, cls, rm, tel, btnElem) {
-        // 🌟 ดึงค่าเวลาที่เลือกจาก Dropdown มา
-        const selectedTime = document.getElementById(`time_${sId}`).value;
+    // เปิด Modal ให้กรอกเวลาและสลิป
+    function openRegModal(sId, fName, nName, cls, rm, tel) {
+        document.getElementById('mdlId').value = sId;
+        document.getElementById('mdlName').innerText = fName;
+        document.getElementById('mdlNick').value = nName;
+        document.getElementById('mdlClass').value = cls;
+        document.getElementById('mdlRoom').value = rm;
+        document.getElementById('mdlTel').value = tel;
+        document.getElementById('mdlSlip').value = ''; // เคลียร์ไฟล์
         
+        var modal = new bootstrap.Modal(document.getElementById('regModal'));
+        modal.show();
+    }
+
+    // ยืนยันบันทึกเด็กใน ศพด.
+    async function confirmInternalReg() {
+        const btn = document.getElementById('btnMdlSave');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...';
+        btn.disabled = true;
+
+        const fileInput = document.getElementById('mdlSlip');
+        const base64Img = fileInput.files.length > 0 ? await getBase64(fileInput.files[0]) : "";
+
         const payload = {
-            studentId: sId,
-            fullName: fName,
-            nickName: nName,
-            classLevel: cls,
-            room: rm,
+            studentId: document.getElementById('mdlId').value,
+            fullName: document.getElementById('mdlName').innerText,
+            nickName: document.getElementById('mdlNick').value,
+            classLevel: document.getElementById('mdlClass').value,
+            room: document.getElementById('mdlRoom').value,
             studentType: 'เด็กใน ศพด.',
-            tel: tel,
-            timeSlot: selectedTime
+            tel: document.getElementById('mdlTel').value,
+            timeSlot: document.getElementById('mdlTime').value,
+            paymentStatus: document.querySelector('input[name="mdlPayStatus"]:checked').value,
+            base64Slip: base64Img
         };
 
-        btnElem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> รอสักครู่...';
-        btnElem.disabled = true;
-        
-        fetch(scriptURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=saveSpecialStudent&data=' + encodeURIComponent(JSON.stringify(payload))
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.status === "success") {
-                btnElem.classList.replace('btn-success', 'btn-secondary');
-                btnElem.innerHTML = '<i class="fas fa-check"></i> ลงทะเบียนแล้ว';
-                loadSpecialStudents();
-                Swal.fire({ icon: 'success', title: 'เพิ่มสำเร็จ', timer: 1500, showConfirmButton: false });
-            } else {
-                Swal.fire('แจ้งเตือน', data.msg, 'error');
-                btnElem.innerHTML = '<i class="fas fa-plus"></i> เพิ่มเข้าเรียนพิเศษ';
-                btnElem.disabled = false;
-            }
+        sendPayloadToServer(payload, btn, '<i class="fas fa-check"></i> บันทึกสำเร็จ', () => {
+            bootstrap.Modal.getInstance(document.getElementById('regModal')).hide();
         });
     }
 
-    function registerExternal() {
-        const payload = {
-            fullName: document.getElementById('exName').value.trim(),
-            nickName: "", 
-            classLevel: document.getElementById('exClass').value.trim(),
-            studentType: 'เด็กภายนอก',
-            tel: document.getElementById('exTel').value.trim(),
-            timeSlot: document.getElementById('exTimeSlot').value // 🌟 ดึงเวลาที่เลือกมา
-        };
+    // ยืนยันบันทึกเด็กนอก
+    async function registerExternal() {
+        const fullName = document.getElementById('exName').value.trim();
+        const classLvl = document.getElementById('exClass').value.trim();
+        const tel = document.getElementById('exTel').value.trim();
 
-        if(!payload.fullName || !payload.classLevel || !payload.tel) {
-            return Swal.fire('กรอกข้อมูลไม่ครบ', 'กรุณากรอกช่องที่มีเครื่องหมาย * ให้ครบถ้วนครับ', 'warning');
+        if(!fullName || !classLvl || !tel) {
+            return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
         }
 
-        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => { Swal.showLoading() }});
+        const btn = document.getElementById('btnExSave');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลด...';
+        btn.disabled = true;
 
+        const fileInput = document.getElementById('exSlip');
+        const base64Img = fileInput.files.length > 0 ? await getBase64(fileInput.files[0]) : "";
+
+        const payload = {
+            fullName: fullName,
+            nickName: "", 
+            classLevel: classLvl,
+            studentType: 'เด็กภายนอก',
+            tel: tel,
+            timeSlot: document.getElementById('exTimeSlot').value,
+            paymentStatus: document.querySelector('input[name="exPayStatus"]:checked').value,
+            base64Slip: base64Img
+        };
+
+        sendPayloadToServer(payload, btn, '<i class="fas fa-save"></i> บันทึกข้อมูลเด็กภายนอก', () => {
+            document.getElementById('exName').value = '';
+            document.getElementById('exClass').value = '';
+            document.getElementById('exTel').value = '';
+            document.getElementById('exSlip').value = '';
+            var triggerEl = document.querySelector('#myTab button[data-bs-target="#list"]');
+            bootstrap.Tab.getInstance(triggerEl).show();
+        });
+    }
+
+    function sendPayloadToServer(payload, btnElem, originalText, onSuccess) {
         fetch(scriptURL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -307,17 +409,17 @@
         .then(res => res.json())
         .then(data => {
             if(data.status === "success") {
-                Swal.fire('สำเร็จ!', 'บันทึกเด็กภายนอกเข้าระบบแล้ว (รหัส EX จะถูกสร้างอัตโนมัติ)', 'success');
-                document.getElementById('exName').value = '';
-                document.getElementById('exClass').value = '';
-                document.getElementById('exTel').value = '';
-                
+                Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.msg, timer: 1500, showConfirmButton: false });
                 loadSpecialStudents();
-                var triggerEl = document.querySelector('#myTab button[data-bs-target="#list"]');
-                bootstrap.Tab.getInstance(triggerEl).show();
+                onSuccess();
             } else {
                 Swal.fire('ผิดพลาด', data.msg, 'error');
             }
+        })
+        .catch(err => Swal.fire('ล้มเหลว', 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'error'))
+        .finally(() => {
+            btnElem.innerHTML = originalText;
+            btnElem.disabled = false;
         });
     }
 </script>
