@@ -370,25 +370,17 @@
         });
     }
 
-    // 🌟 โหลดข้อมูล (เวอร์ชันติดแว่นขยายส่องบัค!)
+    // 🌟 โหลดและจัดเรียงข้อมูล (แก้บัคเรื่องตัวเลขห้องเรียบร้อย!)
     function loadSpecialStudents() {
-        // แจ้งเตือนก่อนดึงข้อมูล
         const unpaidTbody = document.getElementById('unpaidTableBody');
         const paidTbody = document.getElementById('paidTableBody');
         unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-primary py-4"><i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูล...</td></tr>';
         
         fetch(scriptURL + '?action=getSpecialStudents')
-            .then(async res => {
-                const text = await res.text(); // ดึงเป็นข้อความดิบออกมาก่อน
-                try {
-                    return JSON.parse(text); // ลองแปลงเป็น JSON
-                } catch(e) {
-                    throw new Error("หลังบ้านไม่ได้ส่ง JSON กลับมา! ข้อความที่ส่งมาคือ: " + text.substring(0, 150));
-                }
-            })
+            .then(res => res.json())
             .then(data => {
                 if (!Array.isArray(data)) {
-                    Swal.fire('หลังบ้านแจ้งเตือน', data.msg || 'รูปแบบข้อมูลไม่ถูกต้อง', 'warning');
+                    Swal.fire('ข้อผิดพลาด', data.msg || 'พบปัญหาการดึงข้อมูล', 'error');
                     return; 
                 }
 
@@ -400,13 +392,18 @@
                     paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
                 } else {
                     const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
+                    
                     data.sort((a, b) => {
                         let wA = classWeight[a.ClassLevel] || 99;
                         let wB = classWeight[b.ClassLevel] || 99;
                         if(wA !== wB) return wA - wB;
-                        let rA = a.Room || ""; let rB = b.Room || "";
+                        
+                        // 🔥 แก้บัคตรงนี้! บังคับแปลงตัวเลขห้องให้เป็นตัวอักษร (String) ก่อนเปรียบเทียบ
+                        let rA = String(a.Room || ""); 
+                        let rB = String(b.Room || "");
                         if(rA !== rB) return rA.localeCompare(rB);
-                        return (a.FullName || "").localeCompare(b.FullName || "");
+                        
+                        return String(a.FullName || "").localeCompare(String(b.FullName || ""));
                     });
 
                     data.forEach(s => {
@@ -442,9 +439,6 @@
                     });
                 }
                 
-                if(unpaidTbody.innerHTML === '') unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-smile text-success mb-2"></i><br>ไม่มีนักเรียนค้างชำระ</td></tr>';
-                if(paidTbody.innerHTML === '') paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
-
                 document.getElementById('sumTotalCount').innerHTML = `${tCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumExpectedRev').innerText = tRev.toLocaleString();
                 document.getElementById('sumPaidCount').innerHTML = `${pCount} <span class="fs-6 fw-normal">คน</span>`;
@@ -453,15 +447,7 @@
                 document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
             })
             .catch(err => {
-                // 🔥 เด้งแจ้งเตือนกลางหน้าจอเลยว่าพังเพราะอะไร!
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ส่องบัค!',
-                    text: err.message || 'CORS Error หรือ ลิงก์พัง'
-                });
                 console.error("Fetch Error:", err);
-                unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
-                paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
             });
     }
 
