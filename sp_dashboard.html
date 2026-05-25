@@ -339,8 +339,7 @@
 
 <script>
     // ⚠️⚠️ นำลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec'; 
-
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec';
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
