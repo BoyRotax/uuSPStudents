@@ -127,7 +127,6 @@
                             </tbody>
                         </table>
                     </div>
-
                 </div>
 
                 <div class="tab-pane fade" id="add-tk" role="tabpanel">
@@ -225,7 +224,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -275,7 +273,6 @@
             </label>
             <div class="small text-muted ms-2 mt-1">หากติ๊กเลือก รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษทันที</div>
         </div>
-
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
@@ -338,8 +335,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ⚠️⚠️ นำลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
+    // ✅ ลิงก์ที่ถูกต้องของเพื่อน ถูกฝังไว้ตรงนี้เรียบร้อยครับ!
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec';
+    
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
@@ -372,12 +370,9 @@
         });
     }
 
-// 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น (เวอร์ชันเจาะเกราะ Cache!)
+    // 🌟 โหลดข้อมูลฉบับเสถียรที่สุด
     function loadSpecialStudents() {
-        // 🔥 คาถาเจาะเกราะ: ใส่เวลาปัจจุบันต่อท้าย เพื่อบังคับให้ดึงข้อมูลใหม่เสมอ ไม่จำของเก่า
-        const noCacheUrl = scriptURL + '?action=getSpecialStudents&t=' + new Date().getTime();
-
-        fetch(noCacheUrl)
+        fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
                 const unpaidTbody = document.getElementById('unpaidTableBody');
@@ -461,7 +456,7 @@
         document.getElementById('editId').value = sId;
         document.getElementById('editName').innerText = fName;
         document.getElementById('editSlip').value = '';
-        document.getElementById('editDropOut').checked = false; // เคลียร์กล่องติ๊กเลิกเรียน
+        document.getElementById('editDropOut').checked = false;
         
         if(currentMonth && currentMonth !== "-") document.getElementById('editMonth').value = currentMonth;
         if(curStatus === "ชำระแล้ว") document.getElementById('editPay1').checked = true;
@@ -470,7 +465,6 @@
         new bootstrap.Modal(document.getElementById('editPaymentModal')).show();
     }
 
-    // 🌟 บันทึกการแก้ไข (ตรวจจับการเลิกเรียน)
     function savePaymentUpdate() {
         const isDropOut = document.getElementById('editDropOut').checked;
 
