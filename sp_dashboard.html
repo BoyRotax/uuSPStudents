@@ -373,22 +373,29 @@
         });
     }
 
-    // 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น
+    // 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น (เวอร์ชันอัปเกรด กันกระสุน!)
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
                 const unpaidTbody = document.getElementById('unpaidTableBody');
                 const paidTbody = document.getElementById('paidTableBody');
-                unpaidTbody.innerHTML = ''; paidTbody.innerHTML = '';
                 
+                // 🌟 ดักจับ Error: ถ้าข้อมูลที่ส่งมาไม่ใช่ Array (แปลว่าโกดังส่ง Error กลับมา)
+                if (!Array.isArray(data)) {
+                    console.error("พบข้อผิดพลาดจากเซิร์ฟเวอร์:", data);
+                    unpaidTbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> ระบบหลังบ้านแจ้งว่า: ${data.msg || 'กรุณากด Deploy โค้ด Code.gs เป็นเวอร์ชันใหม่!'}</td></tr>`;
+                    paidTbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                    return; // หยุดการทำงานตรงนี้เลย ไม่ให้โค้ดพัง
+                }
+
+                unpaidTbody.innerHTML = ''; paidTbody.innerHTML = '';
                 let tCount = 0, pCount = 0, uCount = 0, tRev = 0, pRev = 0, uRev = 0;
 
-                if(!data || data.length === 0) {
+                if(data.length === 0) {
                     unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
-                    paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                    paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
                 } else {
-                    // 🌟 จัดเรียงตามระดับชั้น (เตรียม -> อ.1 -> อ.2 -> อ.3)
                     const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
                     data.sort((a, b) => {
                         let wA = classWeight[a.ClassLevel] || 99;
@@ -427,7 +434,6 @@
                             </tr>
                         `;
 
-                        // นำแถวไปใส่ตารางที่ถูกต้อง
                         if(isPaid) paidTbody.innerHTML += rowHtml;
                         else unpaidTbody.innerHTML += rowHtml;
                     });
@@ -442,6 +448,12 @@
                 document.getElementById('sumCollectedRev').innerText = pRev.toLocaleString();
                 document.getElementById('sumUnpaidCount').innerHTML = `${uCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
+            })
+            .catch(err => {
+                // ดักจับกรณีลิงก์พัง หรือเน็ตหลุด
+                console.error("Fetch Error:", err);
+                document.getElementById('unpaidTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (กรุณาเช็คลิงก์ scriptURL)</td></tr>';
+                document.getElementById('paidTableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
             });
     }
 
