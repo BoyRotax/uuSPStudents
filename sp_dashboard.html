@@ -370,18 +370,25 @@
         });
     }
 
-    // 🌟 โหลดข้อมูลฉบับเสถียรที่สุด
+    // 🌟 โหลดข้อมูล (เวอร์ชันติดแว่นขยายส่องบัค!)
     function loadSpecialStudents() {
+        // แจ้งเตือนก่อนดึงข้อมูล
+        const unpaidTbody = document.getElementById('unpaidTableBody');
+        const paidTbody = document.getElementById('paidTableBody');
+        unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-primary py-4"><i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูล...</td></tr>';
+        
         fetch(scriptURL + '?action=getSpecialStudents')
-            .then(res => res.json())
+            .then(async res => {
+                const text = await res.text(); // ดึงเป็นข้อความดิบออกมาก่อน
+                try {
+                    return JSON.parse(text); // ลองแปลงเป็น JSON
+                } catch(e) {
+                    throw new Error("หลังบ้านไม่ได้ส่ง JSON กลับมา! ข้อความที่ส่งมาคือ: " + text.substring(0, 150));
+                }
+            })
             .then(data => {
-                const unpaidTbody = document.getElementById('unpaidTableBody');
-                const paidTbody = document.getElementById('paidTableBody');
-                
                 if (!Array.isArray(data)) {
-                    console.error("พบข้อผิดพลาดจากเซิร์ฟเวอร์:", data);
-                    unpaidTbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> ระบบหลังบ้านแจ้งว่า: ${data.msg || 'พบข้อผิดพลาดจากเซิร์ฟเวอร์'}</td></tr>`;
-                    paidTbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                    Swal.fire('หลังบ้านแจ้งเตือน', data.msg || 'รูปแบบข้อมูลไม่ถูกต้อง', 'warning');
                     return; 
                 }
 
@@ -446,9 +453,15 @@
                 document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
             })
             .catch(err => {
+                // 🔥 เด้งแจ้งเตือนกลางหน้าจอเลยว่าพังเพราะอะไร!
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ส่องบัค!',
+                    text: err.message || 'CORS Error หรือ ลิงก์พัง'
+                });
                 console.error("Fetch Error:", err);
-                document.getElementById('unpaidTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (กรุณาเช็คลิงก์ scriptURL)</td></tr>';
-                document.getElementById('paidTableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
+                unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
+                paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
             });
     }
 
