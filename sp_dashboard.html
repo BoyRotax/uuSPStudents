@@ -95,6 +95,7 @@
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
                                     <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
+                                    <th>ระดับชั้น</th>
                                     <th>เวลาเรียน</th>
                                     <th>ประจำเดือน</th>
                                     <th>สถานะ</th>
@@ -102,7 +103,7 @@
                                 </tr>
                             </thead>
                             <tbody id="unpaidTableBody">
-                                <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -115,6 +116,7 @@
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
                                     <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
+                                    <th>ระดับชั้น</th>
                                     <th>เวลาเรียน</th>
                                     <th>ประจำเดือน</th>
                                     <th>วันที่ชำระ</th>
@@ -123,7 +125,7 @@
                                 </tr>
                             </thead>
                             <tbody id="paidTableBody">
-                                <tr><td colspan="8" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                                <tr><td colspan="9" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -224,6 +226,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -273,6 +276,7 @@
             </label>
             <div class="small text-muted ms-2 mt-1">หากติ๊กเลือก รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษทันที</div>
         </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
@@ -335,7 +339,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ✅ ลิงก์ที่ถูกต้องของเพื่อน ถูกฝังไว้ตรงนี้เรียบร้อยครับ!
+    // ✅ ลิงก์ที่ถูกต้อง
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec';
     
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
@@ -370,15 +374,14 @@
         });
     }
 
-    // 🌟 โหลดและจัดเรียงข้อมูล (แก้บัคเรื่องตัวเลขห้องเรียบร้อย!)
+    // 🌟 โหลดและจัดเรียงข้อมูล (+แก้บัควันที่ และเพิ่มคอลัมน์ระดับชั้น)
     function loadSpecialStudents() {
-        const unpaidTbody = document.getElementById('unpaidTableBody');
-        const paidTbody = document.getElementById('paidTableBody');
-        unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-primary py-4"><i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูล...</td></tr>';
-        
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
+                const unpaidTbody = document.getElementById('unpaidTableBody');
+                const paidTbody = document.getElementById('paidTableBody');
+                
                 if (!Array.isArray(data)) {
                     Swal.fire('ข้อผิดพลาด', data.msg || 'พบปัญหาการดึงข้อมูล', 'error');
                     return; 
@@ -388,8 +391,8 @@
                 let tCount = 0, pCount = 0, uCount = 0, tRev = 0, pRev = 0, uRev = 0;
 
                 if(data.length === 0) {
-                    unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
-                    paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
+                    unpaidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                    paidTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
                 } else {
                     const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
                     
@@ -398,7 +401,6 @@
                         let wB = classWeight[b.ClassLevel] || 99;
                         if(wA !== wB) return wA - wB;
                         
-                        // 🔥 แก้บัคตรงนี้! บังคับแปลงตัวเลขห้องให้เป็นตัวอักษร (String) ก่อนเปรียบเทียบ
                         let rA = String(a.Room || ""); 
                         let rB = String(b.Room || "");
                         if(rA !== rB) return rA.localeCompare(rB);
@@ -418,7 +420,30 @@
 
                         const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
                         const nickNameTag = s.NickName ? `<span class="badge bg-light text-primary border ms-1">น้อง${s.NickName}</span>` : '';
-                        const payDateTxt = (s.PaymentDate && s.PaymentDate !== "-") ? s.PaymentDate.split(' ')[0] : '-';
+                        
+                        // 🛠️ แก้บัคแปลงวันที่ให้สวยงาม
+                        let formatMonth = s.PaymentMonth || '-';
+                        if(formatMonth.includes('T')) {
+                            let parts = formatMonth.split('T')[0].split('-');
+                            const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                            let mIdx = parseInt(parts[1]) - 1;
+                            formatMonth = thaiMonths[mIdx] + " " + parts[0];
+                        }
+                        
+                        let formatPayDate = s.PaymentDate && s.PaymentDate !== "-" ? s.PaymentDate : '-';
+                        if(formatPayDate.includes('T')) {
+                            let parts = formatPayDate.split('T')[0].split('-');
+                            let year = parseInt(parts[0]);
+                            if(year < 2500) year += 543;
+                            formatPayDate = `${parts[2]}/${parts[1]}/${year}`;
+                        } else if (formatPayDate !== '-') {
+                            formatPayDate = formatPayDate.split(' ')[0]; // ตัดเวลาทิ้ง
+                        }
+
+                        // 🛠️ ดึงระดับชั้นและห้องมาต่อกัน
+                        let displayClass = s.ClassLevel || '-';
+                        if(s.Room && s.Room !== '-' && s.Room !== '') displayClass += `/${s.Room}`;
+
                         const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
                         const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}')"><i class="fas fa-edit"></i> จัดการ</button>`;
 
@@ -427,9 +452,9 @@
                                 <td class="fw-bold text-secondary">${s.StudentId}</td>
                                 <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
                                 <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
-                                <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
-                                <td class="fw-bold">${s.PaymentMonth || '-'}</td>
-                                ${isPaid ? `<td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${payDateTxt}</span></td><td>${slipBtn}</td>` : `<td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>`}
+                                <td class="text-dark fw-bold">${displayClass}</td> <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
+                                <td class="fw-bold">${formatMonth}</td>
+                                ${isPaid ? `<td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${formatPayDate}</span></td><td>${slipBtn}</td>` : `<td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>`}
                                 <td>${manageBtn}</td>
                             </tr>
                         `;
@@ -439,6 +464,9 @@
                     });
                 }
                 
+                if(unpaidTbody.innerHTML === '') unpaidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-smile text-success mb-2"></i><br>ไม่มีนักเรียนค้างชำระ</td></tr>';
+                if(paidTbody.innerHTML === '') paidTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
+
                 document.getElementById('sumTotalCount').innerHTML = `${tCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumExpectedRev').innerText = tRev.toLocaleString();
                 document.getElementById('sumPaidCount').innerHTML = `${pCount} <span class="fs-6 fw-normal">คน</span>`;
@@ -457,7 +485,8 @@
         document.getElementById('editSlip').value = '';
         document.getElementById('editDropOut').checked = false;
         
-        if(currentMonth && currentMonth !== "-") document.getElementById('editMonth').value = currentMonth;
+        if(currentMonth && currentMonth !== "-" && !currentMonth.includes('T')) document.getElementById('editMonth').value = currentMonth;
+        
         if(curStatus === "ชำระแล้ว") document.getElementById('editPay1').checked = true;
         else document.getElementById('editPay2').checked = true;
 
