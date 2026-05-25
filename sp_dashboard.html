@@ -21,6 +21,7 @@
         .summary-card h6 { opacity: 0.9; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
         .summary-card h2 { font-weight: 800; font-size: 36px; margin-bottom: 5px; }
         .summary-card .small-text { background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px; font-size: 13px; display: inline-block; }
+        .table-custom th { background-color: #f1f5f9; color: #475569; }
     </style>
 </head>
 <body>
@@ -82,28 +83,51 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3 border-top pt-4">
-                        <h5 class="fw-bold text-dark mb-0">ตารางรายชื่อนักเรียน</h5>
+                        <h4 class="fw-bold text-dark mb-0">ตารางรายชื่อนักเรียน</h4>
                         <button class="btn btn-outline-primary btn-sm" onclick="loadSpecialStudents()"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle text-center" style="font-size: 15px;">
-                            <thead class="table-light">
+                    <h5 class="fw-bold text-danger mt-4 mb-2"><i class="fas fa-exclamation-circle"></i> รายชื่อที่ยังไม่ชำระเงิน</h5>
+                    <div class="table-responsive mb-5 shadow-sm rounded-3">
+                        <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
+                            <thead>
                                 <tr>
                                     <th>รหัส</th>
                                     <th>ประเภท</th>
                                     <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
                                     <th>เวลาเรียน</th>
                                     <th>ประจำเดือน</th>
-                                    <th>สถานะ/วันที่ชำระ</th>
+                                    <th>สถานะ</th>
                                     <th>จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="spStudentBody">
+                            <tbody id="unpaidTableBody">
                                 <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <h5 class="fw-bold text-success mb-2"><i class="fas fa-check-circle"></i> รายชื่อที่ชำระเงินแล้ว</h5>
+                    <div class="table-responsive shadow-sm rounded-3">
+                        <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
+                            <thead>
+                                <tr>
+                                    <th>รหัส</th>
+                                    <th>ประเภท</th>
+                                    <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
+                                    <th>เวลาเรียน</th>
+                                    <th>ประจำเดือน</th>
+                                    <th>วันที่ชำระ</th>
+                                    <th>สลิป</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paidTableBody">
+                                <tr><td colspan="8" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
 
                 <div class="tab-pane fade" id="add-tk" role="tabpanel">
@@ -211,40 +235,51 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
-        <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice-dollar"></i> อัปเดตการชำระเงิน</h5>
+        <h5 class="modal-title fw-bold"><i class="fas fa-user-edit"></i> จัดการข้อมูลนักเรียน</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p class="mb-1 text-muted small">กำลังอัปเดตยอดของ:</p>
+        <p class="mb-1 text-muted small">กำลังอัปเดตข้อมูลของ:</p>
         <h5 id="editName" class="fw-bold text-success mb-3">-</h5>
         <input type="hidden" id="editId">
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">ประจำเดือน <span class="text-danger">*</span></label>
-            <select id="editMonth" class="form-select month-selector border-success"></select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">สถานะการชำระเงิน <span class="text-danger">*</span></label>
-            <div class="d-flex gap-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="editPayStatus" id="editPay1" value="ชำระแล้ว">
-                    <label class="form-check-label text-success fw-bold" for="editPay1">ชำระแล้ว</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="editPayStatus" id="editPay2" value="ยังไม่ชำระ">
-                    <label class="form-check-label text-danger fw-bold" for="editPay2">ยังไม่ชำระ</label>
+        <div class="mb-3 border rounded p-3 bg-light">
+            <label class="form-label fw-bold text-primary">อัปเดตการชำระเงิน</label>
+            <div class="mb-3">
+                <label class="form-label fw-bold small">ประจำเดือน <span class="text-danger">*</span></label>
+                <select id="editMonth" class="form-select month-selector border-success"></select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold small">สถานะการชำระเงิน <span class="text-danger">*</span></label>
+                <div class="d-flex gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editPayStatus" id="editPay1" value="ชำระแล้ว">
+                        <label class="form-check-label text-success fw-bold" for="editPay1">ชำระแล้ว</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="editPayStatus" id="editPay2" value="ยังไม่ชำระ">
+                        <label class="form-check-label text-danger fw-bold" for="editPay2">ยังไม่ชำระ</label>
+                    </div>
                 </div>
             </div>
+            <div class="mb-2">
+                <label class="form-label fw-bold small">แนบสลิปโอนเงิน (ถ้ามี)</label>
+                <input type="file" id="editSlip" class="form-control form-control-sm" accept="image/*">
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">แนบสลิปโอนเงิน (ถ้ามี)</label>
-            <input type="file" id="editSlip" class="form-control" accept="image/*">
-            <small class="text-muted">ระบบจะบันทึกวันที่ชำระให้อัตโนมัติ</small>
+
+        <div class="form-check mt-3 border border-danger rounded p-3 bg-white">
+            <input class="form-check-input ms-1" type="checkbox" id="editDropOut">
+            <label class="form-check-label fw-bold text-danger ms-2" for="editDropOut">
+                <i class="fas fa-user-times"></i> แจ้งเลิกเรียนพิเศษ (ลบรายชื่อออก)
+            </label>
+            <div class="small text-muted ms-2 mt-1">หากติ๊กเลือก รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษทันที</div>
         </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-        <button type="button" class="btn btn-success fw-bold" id="btnEditSave" onclick="savePaymentUpdate()">อัปเดตข้อมูล</button>
+        <button type="button" class="btn btn-success fw-bold" id="btnEditSave" onclick="savePaymentUpdate()">บันทึกการเปลี่ยนแปลง</button>
       </div>
     </div>
   </div>
@@ -303,19 +338,16 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ⚠️⚠️ เอาลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
+    // ⚠️⚠️ นำลิงก์ Google Script มาวางตรงนี้ให้เรียบร้อย! ⚠️⚠️
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec'; 
 
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-    // สร้างตัวเลือกเดือนอัตโนมัติ (เช่น พฤษภาคม 2569)
+    // สร้างตัวเลือกเดือนอัตโนมัติ
     function generateMonthOptions() {
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const d = new Date();
-        const curMonthIdx = d.getMonth();
-        const curYear = d.getFullYear() + 543;
-        
         let optionsHtml = '';
         for(let i = -1; i <= 3; i++) { 
             let loopD = new Date(d.getFullYear(), d.getMonth() + i, 1);
@@ -323,7 +355,6 @@
             let selected = (i === 0) ? 'selected' : '';
             optionsHtml += `<option value="${mName}" ${selected}>${mName}</option>`;
         }
-        
         document.querySelectorAll('.month-selector').forEach(el => el.innerHTML = optionsHtml);
     }
 
@@ -342,17 +373,32 @@
         });
     }
 
+    // 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
-                const tbody = document.getElementById('spStudentBody');
-                tbody.innerHTML = '';
+                const unpaidTbody = document.getElementById('unpaidTableBody');
+                const paidTbody = document.getElementById('paidTableBody');
+                unpaidTbody.innerHTML = ''; paidTbody.innerHTML = '';
+                
                 let tCount = 0, pCount = 0, uCount = 0, tRev = 0, pRev = 0, uRev = 0;
 
                 if(!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                    unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                    paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
                 } else {
+                    // 🌟 จัดเรียงตามระดับชั้น (เตรียม -> อ.1 -> อ.2 -> อ.3)
+                    const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
+                    data.sort((a, b) => {
+                        let wA = classWeight[a.ClassLevel] || 99;
+                        let wB = classWeight[b.ClassLevel] || 99;
+                        if(wA !== wB) return wA - wB;
+                        let rA = a.Room || ""; let rB = b.Room || "";
+                        if(rA !== rB) return rA.localeCompare(rB);
+                        return (a.FullName || "").localeCompare(b.FullName || "");
+                    });
+
                     data.forEach(s => {
                         let price = 0;
                         if(s.TimeSlot && s.TimeSlot.includes('400')) price = 400;
@@ -360,32 +406,36 @@
                         else if(s.TimeSlot && s.TimeSlot.includes('600')) price = 600;
 
                         tCount++; tRev += price;
-                        if (s.PaymentStatus === 'ชำระแล้ว') { pCount++; pRev += price; } 
-                        else { uCount++; uRev += price; }
+                        const isPaid = (s.PaymentStatus === 'ชำระแล้ว');
+                        if (isPaid) { pCount++; pRev += price; } else { uCount++; uRev += price; }
 
                         const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
-                        const payColor = s.PaymentStatus === "ชำระแล้ว" ? "text-success" : "text-danger";
-                        const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info ms-2" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '';
                         const nickNameTag = s.NickName ? `<span class="badge bg-light text-primary border ms-1">น้อง${s.NickName}</span>` : '';
-                        const payDateTxt = (s.PaymentDate && s.PaymentDate !== "-") ? `<br><small class="text-muted">วันที่: ${s.PaymentDate.split(' ')[0]}</small>` : '';
+                        const payDateTxt = (s.PaymentDate && s.PaymentDate !== "-") ? s.PaymentDate.split(' ')[0] : '-';
+                        const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
+                        const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}')"><i class="fas fa-edit"></i> จัดการ</button>`;
 
-                        tbody.innerHTML += `
+                        const rowHtml = `
                             <tr>
-                                <td class="fw-bold">${s.StudentId}</td>
+                                <td class="fw-bold text-secondary">${s.StudentId}</td>
                                 <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
                                 <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
                                 <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
                                 <td class="fw-bold">${s.PaymentMonth || '-'}</td>
-                                <td><span class="fw-bold ${payColor}">${s.PaymentStatus}</span> ${slipBtn} ${payDateTxt}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-success" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}')">
-                                        <i class="fas fa-edit"></i> จัดการ
-                                    </button>
-                                </td>
+                                ${isPaid ? `<td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${payDateTxt}</span></td><td>${slipBtn}</td>` : `<td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>`}
+                                <td>${manageBtn}</td>
                             </tr>
                         `;
+
+                        // นำแถวไปใส่ตารางที่ถูกต้อง
+                        if(isPaid) paidTbody.innerHTML += rowHtml;
+                        else unpaidTbody.innerHTML += rowHtml;
                     });
                 }
+                
+                if(unpaidTbody.innerHTML === '') unpaidTbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="fas fa-smile text-success mb-2"></i><br>ไม่มีนักเรียนค้างชำระ</td></tr>';
+                if(paidTbody.innerHTML === '') paidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
+
                 document.getElementById('sumTotalCount').innerHTML = `${tCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumExpectedRev').innerText = tRev.toLocaleString();
                 document.getElementById('sumPaidCount').innerHTML = `${pCount} <span class="fs-6 fw-normal">คน</span>`;
@@ -395,22 +445,42 @@
             });
     }
 
-    // 🌟 ฟังก์ชันเปิดหน้าต่างแก้ไขการชำระเงิน
     function openEditPayment(sId, fName, currentMonth, curStatus) {
         document.getElementById('editId').value = sId;
         document.getElementById('editName').innerText = fName;
         document.getElementById('editSlip').value = '';
+        document.getElementById('editDropOut').checked = false; // เคลียร์กล่องติ๊กเลิกเรียน
         
         if(currentMonth && currentMonth !== "-") document.getElementById('editMonth').value = currentMonth;
-        
         if(curStatus === "ชำระแล้ว") document.getElementById('editPay1').checked = true;
         else document.getElementById('editPay2').checked = true;
 
         new bootstrap.Modal(document.getElementById('editPaymentModal')).show();
     }
 
-    // 🌟 ฟังก์ชันบันทึกการแก้ไขชำระเงิน
-    async function savePaymentUpdate() {
+    // 🌟 บันทึกการแก้ไข (ตรวจจับการเลิกเรียน)
+    function savePaymentUpdate() {
+        const isDropOut = document.getElementById('editDropOut').checked;
+
+        if (isDropOut) {
+            Swal.fire({
+                title: 'ยืนยันเลิกเรียน?',
+                text: "รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษถาวร!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ยืนยันการลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if(result.isConfirmed) processPaymentUpdateToServer(true);
+            });
+        } else {
+            processPaymentUpdateToServer(false);
+        }
+    }
+
+    async function processPaymentUpdateToServer(isDropOutFlag) {
         const btn = document.getElementById('btnEditSave');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> อัปเดต...';
         btn.disabled = true;
@@ -422,7 +492,8 @@
             studentId: document.getElementById('editId').value,
             paymentMonth: document.getElementById('editMonth').value,
             paymentStatus: document.querySelector('input[name="editPayStatus"]:checked').value,
-            base64Slip: base64Img
+            base64Slip: base64Img,
+            isDropOut: isDropOutFlag
         };
 
         fetch(scriptURL, {
@@ -431,14 +502,13 @@
             body: 'action=updateSpecialPayment&data=' + encodeURIComponent(JSON.stringify(payload))
         }).then(res => res.json()).then(data => {
             if(data.status === "success") {
-                Swal.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย', timer: 1500, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.msg, timer: 1500, showConfirmButton: false });
                 loadSpecialStudents();
                 bootstrap.Modal.getInstance(document.getElementById('editPaymentModal')).hide();
             } else Swal.fire('ผิดพลาด', data.msg, 'error');
-        }).finally(() => { btn.innerHTML = 'อัปเดตข้อมูล'; btn.disabled = false; });
+        }).finally(() => { btn.innerHTML = 'บันทึกการเปลี่ยนแปลง'; btn.disabled = false; });
     }
 
-    // 🌟 ดึงเด็ก ศพด. พร้อมโชว์ชื่อเล่น
     function fetchTkStudents() {
         const cls = document.getElementById('filterClass').value;
         const rm = document.getElementById('filterRoom').value;
