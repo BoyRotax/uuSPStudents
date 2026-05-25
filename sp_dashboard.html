@@ -372,20 +372,22 @@
         });
     }
 
-    // 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น (เวอร์ชันอัปเกรด กันกระสุน!)
+// 🌟 โหลดและแยก 2 ตาราง + จัดเรียงระดับชั้น (เวอร์ชันเจาะเกราะ Cache!)
     function loadSpecialStudents() {
-        fetch(scriptURL + '?action=getSpecialStudents')
+        // 🔥 คาถาเจาะเกราะ: ใส่เวลาปัจจุบันต่อท้าย เพื่อบังคับให้ดึงข้อมูลใหม่เสมอ ไม่จำของเก่า
+        const noCacheUrl = scriptURL + '?action=getSpecialStudents&t=' + new Date().getTime();
+
+        fetch(noCacheUrl)
             .then(res => res.json())
             .then(data => {
                 const unpaidTbody = document.getElementById('unpaidTableBody');
                 const paidTbody = document.getElementById('paidTableBody');
                 
-                // 🌟 ดักจับ Error: ถ้าข้อมูลที่ส่งมาไม่ใช่ Array (แปลว่าโกดังส่ง Error กลับมา)
                 if (!Array.isArray(data)) {
                     console.error("พบข้อผิดพลาดจากเซิร์ฟเวอร์:", data);
-                    unpaidTbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> ระบบหลังบ้านแจ้งว่า: ${data.msg || 'กรุณากด Deploy โค้ด Code.gs เป็นเวอร์ชันใหม่!'}</td></tr>`;
+                    unpaidTbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> ระบบหลังบ้านแจ้งว่า: ${data.msg || 'พบข้อผิดพลาดจากเซิร์ฟเวอร์'}</td></tr>`;
                     paidTbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger fw-bold py-4"><i class="fas fa-exclamation-triangle"></i> โหลดข้อมูลไม่สำเร็จ</td></tr>`;
-                    return; // หยุดการทำงานตรงนี้เลย ไม่ให้โค้ดพัง
+                    return; 
                 }
 
                 unpaidTbody.innerHTML = ''; paidTbody.innerHTML = '';
@@ -449,7 +451,6 @@
                 document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
             })
             .catch(err => {
-                // ดักจับกรณีลิงก์พัง หรือเน็ตหลุด
                 console.error("Fetch Error:", err);
                 document.getElementById('unpaidTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ (กรุณาเช็คลิงก์ scriptURL)</td></tr>';
                 document.getElementById('paidTableBody').innerHTML = '<tr><td colspan="8" class="text-center text-danger fw-bold py-4">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</td></tr>';
