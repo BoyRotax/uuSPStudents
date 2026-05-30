@@ -17,7 +17,7 @@
         .card-box { background: white; border-radius: 0 15px 15px 15px; border: 1px solid #dee2e6; border-top: none; }
         .badge-tk { background-color: #10b981; color: white; }
         .badge-ex { background-color: #f59e0b; color: white; }
-        .bg-purple { background-color: #8b5cf6 !important; color: white; } /* 🌟 สีป้ายพิเศษสำหรับวันเสาร์ */
+        .bg-purple { background-color: #8b5cf6 !important; color: white; } 
         .summary-card { border-radius: 15px; border: none; padding: 20px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .summary-card h6 { opacity: 0.9; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
         .summary-card h2 { font-weight: 800; font-size: 36px; margin-bottom: 5px; }
@@ -38,6 +38,9 @@
                 <small class="text-indigo-200">เรียนพิเศษ ศพด.ทับกวาง</small>
             </div>
             <a href="sp_dashboard.html" class="active"><i class="fas fa-list-alt me-2"></i> จัดการนักเรียน</a>
+            
+            <a href="#" id="menu-backToNormal" onclick="goBackToNormalSystem()" class="text-warning mt-3"><i class="fas fa-arrow-alt-circle-left me-2"></i> ระบบภาคปกติ</a>
+            
             <hr class="text-secondary">
             <a href="#" onclick="logout()" class="text-danger"><i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ</a>
         </div>
@@ -267,7 +270,9 @@
         <div id="editTimeDisplay" class="badge bg-secondary mb-3">-</div>
         
         <input type="hidden" id="editId">
-        <input type="hidden" id="editTimeSlot"> <div class="mb-3 border rounded p-3 bg-light">
+        <input type="hidden" id="editTimeSlot"> 
+
+        <div class="mb-3 border rounded p-3 bg-light">
             <label class="form-label fw-bold text-primary">อัปเดตการชำระเงิน</label>
             <div class="mb-3">
                 <label class="form-label fw-bold small">ประจำเดือน <span class="text-danger">*</span></label>
@@ -362,8 +367,27 @@
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec';
     
-    document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
+    const spUserName = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
+    // 🌟 ดึงข้อมูลสิทธิ์ภาคปกติที่แอบฝากติดกระเป๋ามา
+    const normalUserRole = sessionStorage.getItem('userRole') || ''; 
+    const normalUserName = sessionStorage.getItem('userName') || '';
+
+    document.getElementById('displayUserName').innerText = spUserName;
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
+
+    // 🌟 ระบบดักสิทธิ์เพื่อแสดง/ซ่อนปุ่มวาร์ปขากลับ (ให้สิทธิ์เฉพาะ Admin และ Noom)
+    function applySpAccessRights() {
+        $('#menu-backToNormal').hide(); // ปิดไว้ก่อนทุกคน
+        if (normalUserRole === 'Admin' || normalUserName === 'Noom') {
+            $('#menu-backToNormal').show(); // เปิดเฉพาะตัวจริงเสียงจริง
+        }
+    }
+
+    // 🌟 ฟังก์ชันวาร์ปย้อนขากลับระบบภาคปกติ (PapaiTK)
+    function goBackToNormalSystem() {
+        sessionStorage.setItem('isLoggedIn', 'true'); // มอบตั๋วคืนร่างเดิม
+        window.location.href = 'https://boyrotax.github.io/PapaiTK/dashboard.html#';
+    }
 
     function generateMonthOptions() {
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -379,6 +403,7 @@
     }
 
     $(document).ready(function() { 
+        applySpAccessRights(); // รันระบบดักแสดงปุ่มวาร์ปขากลับ
         generateMonthOptions();
         loadSpecialStudents(); 
     });
@@ -450,7 +475,6 @@
                         let displayClass = s.ClassLevel || '-';
                         if(s.Room && s.Room !== '-' && s.Room !== '') displayClass += `/${s.Room}`;
 
-                        // 🌟 ระบบไฮไลท์สีป้ายเวลาเรียน
                         let tColor = "bg-secondary";
                         if(s.TimeSlot) {
                             if(s.TimeSlot.includes("14:30 - 15:30")) tColor = "bg-primary";
@@ -461,7 +485,6 @@
                         const timeBadge = `<span class="badge ${tColor} p-2 shadow-sm" style="font-size: 13px;">${s.TimeSlot || '-'}</span>`;
 
                         const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
-                        // 🌟 เพิ่ม s.TimeSlot เข้าไปในปุ่มจัดการ เพื่อส่งกลับไปแก้ไขให้ถูกช่อง
                         const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}', '${s.TimeSlot}')"><i class="fas fa-edit"></i> จัดการ</button>`;
 
                         const rowUnpaidHtml = `
@@ -494,7 +517,7 @@
                         if (!isPaid) { unpaidTbody.innerHTML += rowUnpaidHtml; } 
                         else {
                             if (s.TimeSlot && s.TimeSlot.includes('ส.')) paidSaturdayTbody.innerHTML += rowPaidHtml; 
-                            else paidWeekdayTbody.innerHTML += rowHtml = rowPaidHtml; 
+                            else paidWeekdayTbody.innerHTML += rowPaidHtml; 
                         }
                     });
                 }
@@ -512,10 +535,9 @@
             }).catch(err => console.error("Fetch Error:", err));
     }
 
-    // 🌟 รับค่ารอบเวลาเรียนมาเก็บไว้ใน Modal ด้วย
     function openEditPayment(sId, fName, currentMonth, curStatus, tSlot) {
         document.getElementById('editId').value = sId;
-        document.getElementById('editTimeSlot').value = tSlot; // จำว่ากำลังแก้รอบเวลาไหน
+        document.getElementById('editTimeSlot').value = tSlot; 
         document.getElementById('editName').innerText = fName;
         document.getElementById('editTimeDisplay').innerText = "รอบเวลา: " + (tSlot || '-');
         document.getElementById('editSlip').value = '';
@@ -551,7 +573,6 @@
         const fileInput = document.getElementById('editSlip');
         const base64Img = fileInput.files.length > 0 ? await getBase64(fileInput.files[0]) : "";
 
-        // 🌟 ส่งรอบเวลาเรียนกลับไปที่เซิร์ฟเวอร์ด้วย เพื่อให้มันแก้ข้อมูลได้ถูกแถว
         const payload = {
             studentId: document.getElementById('editId').value,
             timeSlot: document.getElementById('editTimeSlot').value,
