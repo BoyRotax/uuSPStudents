@@ -87,8 +87,8 @@
                         <button class="btn btn-outline-primary btn-sm" onclick="loadSpecialStudents()"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
                     </div>
                     
-                    <h5 class="fw-bold text-danger mt-4 mb-2"><i class="fas fa-exclamation-circle"></i> รายชื่อที่ยังไม่ชำระเงิน</h5>
-                    <div class="table-responsive mb-5 shadow-sm rounded-3">
+                    <h5 class="fw-bold text-danger mt-4 mb-2"><i class="fas fa-exclamation-circle"></i> 1. รายชื่อที่ยังไม่ชำระเงิน (ทุกรอบเวลา)</h5>
+                    <div class="table-responsive mb-4 shadow-sm rounded-3">
                         <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
                             <thead>
                                 <tr>
@@ -108,7 +108,29 @@
                         </table>
                     </div>
 
-                    <h5 class="fw-bold text-success mb-2"><i class="fas fa-check-circle"></i> รายชื่อที่ชำระเงินแล้ว</h5>
+                    <h5 class="fw-bold text-success mt-4 mb-2"><i class="fas fa-moon"></i> 2. รายชื่อที่ชำระเงินแล้ว - รอบเย็น (จันทร์ - พฤหัสบดี)</h5>
+                    <div class="table-responsive mb-4 shadow-sm rounded-3">
+                        <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
+                            <thead>
+                                <tr>
+                                    <th>รหัส</th>
+                                    <th>ประเภท</th>
+                                    <th class="text-start">ชื่อ-สกุล (ชื่อเล่น)</th>
+                                    <th>ระดับชั้น</th>
+                                    <th>เวลาเรียน</th>
+                                    <th>ประจำเดือน</th>
+                                    <th>วันที่ชำระ</th>
+                                    <th>สลิป</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paidWeekdayTableBody">
+                                <tr><td colspan="9" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h5 class="fw-bold text-warning mt-4 mb-2"><i class="fas fa-sun"></i> 3. รายชื่อที่ชำระเงินแล้ว - รอบวันเสาร์</h5>
                     <div class="table-responsive shadow-sm rounded-3">
                         <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
                             <thead>
@@ -124,7 +146,7 @@
                                     <th>จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="paidTableBody">
+                            <tbody id="paidSaturdayTableBody">
                                 <tr><td colspan="9" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
                             </tbody>
                         </table>
@@ -226,7 +248,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -276,7 +297,6 @@
             </label>
             <div class="small text-muted ms-2 mt-1">หากติ๊กเลือก รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษทันที</div>
         </div>
-
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
@@ -339,13 +359,11 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ✅ ลิงก์ที่ถูกต้อง
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyagDKJpTH0NTnHhMsHUtZmuhNk8AlyeeTBPa90xR9ezHdp9mncc1jf2GrP5b9TjD9dSQ/exec';
     
     document.getElementById('displayUserName').innerText = sessionStorage.getItem('spUserName') || 'ผู้สอนพิเศษ';
     function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
 
-    // สร้างตัวเลือกเดือนอัตโนมัติ
     function generateMonthOptions() {
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const d = new Date();
@@ -374,25 +392,27 @@
         });
     }
 
-    // 🌟 โหลดและจัดเรียงข้อมูล (+แก้บัควันที่ และเพิ่มคอลัมน์ระดับชั้น)
+    // 🌟 ฟังก์ชันโหลดข้อมูลและกระจายลง 3 ตารางแยกตามเงื่อนไขรอบวันเสาร์
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
             .then(data => {
                 const unpaidTbody = document.getElementById('unpaidTableBody');
-                const paidTbody = document.getElementById('paidTableBody');
+                const paidWeekdayTbody = document.getElementById('paidWeekdayTableBody');
+                const paidSaturdayTbody = document.getElementById('paidSaturdayTableBody');
                 
                 if (!Array.isArray(data)) {
                     Swal.fire('ข้อผิดพลาด', data.msg || 'พบปัญหาการดึงข้อมูล', 'error');
                     return; 
                 }
 
-                unpaidTbody.innerHTML = ''; paidTbody.innerHTML = '';
+                unpaidTbody.innerHTML = ''; paidWeekdayTbody.innerHTML = ''; paidSaturdayTbody.innerHTML = '';
                 let tCount = 0, pCount = 0, uCount = 0, tRev = 0, pRev = 0, uRev = 0;
 
                 if(data.length === 0) {
                     unpaidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียน</td></tr>';
-                    paidTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
+                    paidWeekdayTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนรอบเย็นที่ชำระเงินแล้ว</td></tr>';
+                    paidSaturdayTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนรอบวันเสาร์ที่ชำระเงินแล้ว</td></tr>';
                 } else {
                     const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
                     
@@ -421,13 +441,11 @@
                         const badgeClass = s.StudentType === "เด็กใน ศพด." ? "badge-tk" : "badge-ex";
                         const nickNameTag = s.NickName ? `<span class="badge bg-light text-primary border ms-1">น้อง${s.NickName}</span>` : '';
                         
-                        // 🛠️ แก้บัคแปลงวันที่ให้สวยงาม
                         let formatMonth = s.PaymentMonth || '-';
                         if(formatMonth.includes('T')) {
                             let parts = formatMonth.split('T')[0].split('-');
                             const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                            let mIdx = parseInt(parts[1]) - 1;
-                            formatMonth = thaiMonths[mIdx] + " " + parts[0];
+                            formatMonth = thaiMonths[parseInt(parts[1]) - 1] + " " + parts[0];
                         }
                         
                         let formatPayDate = s.PaymentDate && s.PaymentDate !== "-" ? s.PaymentDate : '-';
@@ -437,35 +455,60 @@
                             if(year < 2500) year += 543;
                             formatPayDate = `${parts[2]}/${parts[1]}/${year}`;
                         } else if (formatPayDate !== '-') {
-                            formatPayDate = formatPayDate.split(' ')[0]; // ตัดเวลาทิ้ง
+                            formatPayDate = formatPayDate.split(' ')[0];
                         }
 
-                        // 🛠️ ดึงระดับชั้นและห้องมาต่อกัน
                         let displayClass = s.ClassLevel || '-';
                         if(s.Room && s.Room !== '-' && s.Room !== '') displayClass += `/${s.Room}`;
 
                         const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
                         const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}')"><i class="fas fa-edit"></i> จัดการ</button>`;
 
-                        const rowHtml = `
+                        // โครงสร้างแถวตารางค้างชำระ
+                        const rowUnpaidHtml = `
                             <tr>
                                 <td class="fw-bold text-secondary">${s.StudentId}</td>
                                 <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
                                 <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
-                                <td class="text-dark fw-bold">${displayClass}</td> <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
+                                <td class="text-dark fw-bold">${displayClass}</td>
+                                <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
                                 <td class="fw-bold">${formatMonth}</td>
-                                ${isPaid ? `<td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${formatPayDate}</span></td><td>${slipBtn}</td>` : `<td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>`}
+                                <td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>
                                 <td>${manageBtn}</td>
                             </tr>
                         `;
 
-                        if(isPaid) paidTbody.innerHTML += rowHtml;
-                        else unpaidTbody.innerHTML += rowHtml;
+                        // โครงสร้างแถวตารางชำระเงินแล้ว
+                        const rowPaidHtml = `
+                            <tr>
+                                <td class="fw-bold text-secondary">${s.StudentId}</td>
+                                <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
+                                <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
+                                <td class="text-dark fw-bold">${displayClass}</td>
+                                <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
+                                <td class="fw-bold">${formatMonth}</td>
+                                <td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${formatPayDate}</span></td>
+                                <td>${slipBtn}</td>
+                                <td>${manageBtn}</td>
+                            </tr>
+                        `;
+
+                        // 🌟 คัดกรองและกระจายข้อมูลลง 3 ตารางแยกกันอย่างชัดเจน
+                        if (!isPaid) {
+                            unpaidTbody.innerHTML += rowUnpaidHtml;
+                        } else {
+                            if (s.TimeSlot && s.TimeSlot.includes('ส.')) {
+                                paidSaturdayTbody.innerHTML += rowPaidHtml; // ลงตารางรอบวันเสาร์
+                            } else {
+                                paidWeekdayTbody.innerHTML += rowHtml = rowPaidHtml; // ลงตารางรอบวันธรรมดา
+                            }
+                        }
                     });
                 }
                 
-                if(unpaidTbody.innerHTML === '') unpaidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-smile text-success mb-2"></i><br>ไม่มีนักเรียนค้างชำระ</td></tr>';
-                if(paidTbody.innerHTML === '') paidTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนที่ชำระเงินแล้ว</td></tr>';
+                if(unpaidTbody.innerHTML === '') unpaidTbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-smile text-success mb-2"></i><br>ไม่มีนักเรียนค้างชำระในรอบนี้</td></tr>';
+                if(paidWeekdayTbody.innerHTML === '') paidWeekdayTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนรอบเย็นที่ชำระเงินแล้ว</td></tr>';
+                if(paidSaturdayTbody.innerHTML === '') paidSaturdayTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนรอบวันเสาร์ที่ชำระเงินแล้ว</td></tr>';
 
                 document.getElementById('sumTotalCount').innerHTML = `${tCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumExpectedRev').innerText = tRev.toLocaleString();
@@ -484,18 +527,14 @@
         document.getElementById('editName').innerText = fName;
         document.getElementById('editSlip').value = '';
         document.getElementById('editDropOut').checked = false;
-        
         if(currentMonth && currentMonth !== "-" && !currentMonth.includes('T')) document.getElementById('editMonth').value = currentMonth;
-        
         if(curStatus === "ชำระแล้ว") document.getElementById('editPay1').checked = true;
         else document.getElementById('editPay2').checked = true;
-
         new bootstrap.Modal(document.getElementById('editPaymentModal')).show();
     }
 
     function savePaymentUpdate() {
         const isDropOut = document.getElementById('editDropOut').checked;
-
         if (isDropOut) {
             Swal.fire({
                 title: 'ยืนยันเลิกเรียน?',
@@ -518,7 +557,6 @@
         const btn = document.getElementById('btnEditSave');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> อัปเดต...';
         btn.disabled = true;
-
         const fileInput = document.getElementById('editSlip');
         const base64Img = fileInput.files.length > 0 ? await getBase64(fileInput.files[0]) : "";
 
@@ -623,7 +661,6 @@
         const fullName = document.getElementById('exName').value.trim();
         const classLvl = document.getElementById('exClass').value.trim();
         const tel = document.getElementById('exTel').value.trim();
-
         if(!fullName || !classLvl || !tel) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกช่อง * ให้ครบ', 'warning');
 
         const btn = document.getElementById('btnExSave');
