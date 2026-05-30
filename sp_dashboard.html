@@ -17,6 +17,7 @@
         .card-box { background: white; border-radius: 0 15px 15px 15px; border: 1px solid #dee2e6; border-top: none; }
         .badge-tk { background-color: #10b981; color: white; }
         .badge-ex { background-color: #f59e0b; color: white; }
+        .bg-purple { background-color: #8b5cf6 !important; color: white; } /* 🌟 สีป้ายพิเศษสำหรับวันเสาร์ */
         .summary-card { border-radius: 15px; border: none; padding: 20px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .summary-card h6 { opacity: 0.9; font-weight: 600; font-size: 16px; margin-bottom: 5px; }
         .summary-card h2 { font-weight: 800; font-size: 36px; margin-bottom: 5px; }
@@ -130,7 +131,7 @@
                         </table>
                     </div>
 
-                    <h5 class="fw-bold text-warning mt-4 mb-2"><i class="fas fa-sun"></i> 3. รายชื่อที่ชำระเงินแล้ว - รอบวันเสาร์</h5>
+                    <h5 class="fw-bold text-warning mt-4 mb-2" style="color: #8b5cf6 !important;"><i class="fas fa-sun"></i> 3. รายชื่อที่ชำระเงินแล้ว - รอบวันเสาร์</h5>
                     <div class="table-responsive shadow-sm rounded-3">
                         <table class="table table-hover align-middle text-center table-custom mb-0" style="font-size: 15px;">
                             <thead>
@@ -262,10 +263,11 @@
       </div>
       <div class="modal-body">
         <p class="mb-1 text-muted small">กำลังอัปเดตข้อมูลของ:</p>
-        <h5 id="editName" class="fw-bold text-success mb-3">-</h5>
+        <h5 id="editName" class="fw-bold text-success mb-2">-</h5>
+        <div id="editTimeDisplay" class="badge bg-secondary mb-3">-</div>
+        
         <input type="hidden" id="editId">
-
-        <div class="mb-3 border rounded p-3 bg-light">
+        <input type="hidden" id="editTimeSlot"> <div class="mb-3 border rounded p-3 bg-light">
             <label class="form-label fw-bold text-primary">อัปเดตการชำระเงิน</label>
             <div class="mb-3">
                 <label class="form-label fw-bold small">ประจำเดือน <span class="text-danger">*</span></label>
@@ -293,9 +295,8 @@
         <div class="form-check mt-3 border border-danger rounded p-3 bg-white">
             <input class="form-check-input ms-1" type="checkbox" id="editDropOut">
             <label class="form-check-label fw-bold text-danger ms-2" for="editDropOut">
-                <i class="fas fa-user-times"></i> แจ้งเลิกเรียนพิเศษ (ลบรายชื่อออก)
+                <i class="fas fa-user-times"></i> แจ้งเลิกเรียนพิเศษรอบเวลานี้ (ลบรายชื่อออก)
             </label>
-            <div class="small text-muted ms-2 mt-1">หากติ๊กเลือก รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษทันที</div>
         </div>
       </div>
       <div class="modal-footer">
@@ -392,7 +393,6 @@
         });
     }
 
-    // 🌟 ฟังก์ชันโหลดข้อมูลและกระจายลง 3 ตารางแยกตามเงื่อนไขรอบวันเสาร์
     function loadSpecialStudents() {
         fetch(scriptURL + '?action=getSpecialStudents')
             .then(res => res.json())
@@ -401,10 +401,7 @@
                 const paidWeekdayTbody = document.getElementById('paidWeekdayTableBody');
                 const paidSaturdayTbody = document.getElementById('paidSaturdayTableBody');
                 
-                if (!Array.isArray(data)) {
-                    Swal.fire('ข้อผิดพลาด', data.msg || 'พบปัญหาการดึงข้อมูล', 'error');
-                    return; 
-                }
+                if (!Array.isArray(data)) { Swal.fire('ข้อผิดพลาด', data.msg || 'พบปัญหาการดึงข้อมูล', 'error'); return; }
 
                 unpaidTbody.innerHTML = ''; paidWeekdayTbody.innerHTML = ''; paidSaturdayTbody.innerHTML = '';
                 let tCount = 0, pCount = 0, uCount = 0, tRev = 0, pRev = 0, uRev = 0;
@@ -415,16 +412,11 @@
                     paidSaturdayTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">ยังไม่มีข้อมูลนักเรียนรอบวันเสาร์ที่ชำระเงินแล้ว</td></tr>';
                 } else {
                     const classWeight = { "เตรียมอนุบาล": 1, "อนุบาล 1": 2, "อนุบาล 2": 3, "อนุบาล 3": 4 };
-                    
                     data.sort((a, b) => {
-                        let wA = classWeight[a.ClassLevel] || 99;
-                        let wB = classWeight[b.ClassLevel] || 99;
+                        let wA = classWeight[a.ClassLevel] || 99; let wB = classWeight[b.ClassLevel] || 99;
                         if(wA !== wB) return wA - wB;
-                        
-                        let rA = String(a.Room || ""); 
-                        let rB = String(b.Room || "");
+                        let rA = String(a.Room || ""); let rB = String(b.Room || "");
                         if(rA !== rB) return rA.localeCompare(rB);
-                        
                         return String(a.FullName || "").localeCompare(String(b.FullName || ""));
                     });
 
@@ -451,41 +443,47 @@
                         let formatPayDate = s.PaymentDate && s.PaymentDate !== "-" ? s.PaymentDate : '-';
                         if(formatPayDate.includes('T')) {
                             let parts = formatPayDate.split('T')[0].split('-');
-                            let year = parseInt(parts[0]);
-                            if(year < 2500) year += 543;
+                            let year = parseInt(parts[0]); if(year < 2500) year += 543;
                             formatPayDate = `${parts[2]}/${parts[1]}/${year}`;
-                        } else if (formatPayDate !== '-') {
-                            formatPayDate = formatPayDate.split(' ')[0];
-                        }
+                        } else if (formatPayDate !== '-') { formatPayDate = formatPayDate.split(' ')[0]; }
 
                         let displayClass = s.ClassLevel || '-';
                         if(s.Room && s.Room !== '-' && s.Room !== '') displayClass += `/${s.Room}`;
 
-                        const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
-                        const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}')"><i class="fas fa-edit"></i> จัดการ</button>`;
+                        // 🌟 ระบบไฮไลท์สีป้ายเวลาเรียน
+                        let tColor = "bg-secondary";
+                        if(s.TimeSlot) {
+                            if(s.TimeSlot.includes("14:30 - 15:30")) tColor = "bg-primary";
+                            else if(s.TimeSlot.includes("17:00 - 18:00")) tColor = "bg-info text-dark";
+                            else if(s.TimeSlot.includes("14:30 - 18:00")) tColor = "bg-warning text-dark";
+                            else if(s.TimeSlot.includes("ส.")) tColor = "bg-purple";
+                        }
+                        const timeBadge = `<span class="badge ${tColor} p-2 shadow-sm" style="font-size: 13px;">${s.TimeSlot || '-'}</span>`;
 
-                        // โครงสร้างแถวตารางค้างชำระ
+                        const slipBtn = s.SlipUrl && s.SlipUrl !== "" ? `<a href="${s.SlipUrl}" target="_blank" class="text-info fs-5" title="ดูสลิป"><i class="fas fa-file-invoice"></i></a>` : '-';
+                        // 🌟 เพิ่ม s.TimeSlot เข้าไปในปุ่มจัดการ เพื่อส่งกลับไปแก้ไขให้ถูกช่อง
+                        const manageBtn = `<button class="btn btn-sm btn-outline-success fw-bold" onclick="openEditPayment('${s.StudentId}', '${s.FullName}', '${s.PaymentMonth}', '${s.PaymentStatus}', '${s.TimeSlot}')"><i class="fas fa-edit"></i> จัดการ</button>`;
+
                         const rowUnpaidHtml = `
                             <tr>
                                 <td class="fw-bold text-secondary">${s.StudentId}</td>
                                 <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
                                 <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
                                 <td class="text-dark fw-bold">${displayClass}</td>
-                                <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
+                                <td>${timeBadge}</td>
                                 <td class="fw-bold">${formatMonth}</td>
                                 <td><span class="text-danger fw-bold"><i class="fas fa-times"></i> ยังไม่ชำระ</span></td>
                                 <td>${manageBtn}</td>
                             </tr>
                         `;
 
-                        // โครงสร้างแถวตารางชำระเงินแล้ว
                         const rowPaidHtml = `
                             <tr>
                                 <td class="fw-bold text-secondary">${s.StudentId}</td>
                                 <td><span class="badge ${badgeClass}">${s.StudentType}</span></td>
                                 <td class="text-start fw-bold">${s.FullName} ${nickNameTag}</td>
                                 <td class="text-dark fw-bold">${displayClass}</td>
-                                <td class="text-primary fw-bold" style="font-size: 13px;">${s.TimeSlot || '-'}</td>
+                                <td>${timeBadge}</td>
                                 <td class="fw-bold">${formatMonth}</td>
                                 <td><span class="text-success fw-bold"><i class="fas fa-check"></i> ${formatPayDate}</span></td>
                                 <td>${slipBtn}</td>
@@ -493,15 +491,10 @@
                             </tr>
                         `;
 
-                        // 🌟 คัดกรองและกระจายข้อมูลลง 3 ตารางแยกกันอย่างชัดเจน
-                        if (!isPaid) {
-                            unpaidTbody.innerHTML += rowUnpaidHtml;
-                        } else {
-                            if (s.TimeSlot && s.TimeSlot.includes('ส.')) {
-                                paidSaturdayTbody.innerHTML += rowPaidHtml; // ลงตารางรอบวันเสาร์
-                            } else {
-                                paidWeekdayTbody.innerHTML += rowHtml = rowPaidHtml; // ลงตารางรอบวันธรรมดา
-                            }
+                        if (!isPaid) { unpaidTbody.innerHTML += rowUnpaidHtml; } 
+                        else {
+                            if (s.TimeSlot && s.TimeSlot.includes('ส.')) paidSaturdayTbody.innerHTML += rowPaidHtml; 
+                            else paidWeekdayTbody.innerHTML += rowHtml = rowPaidHtml; 
                         }
                     });
                 }
@@ -516,15 +509,15 @@
                 document.getElementById('sumCollectedRev').innerText = pRev.toLocaleString();
                 document.getElementById('sumUnpaidCount').innerHTML = `${uCount} <span class="fs-6 fw-normal">คน</span>`;
                 document.getElementById('sumPendingRev').innerText = uRev.toLocaleString();
-            })
-            .catch(err => {
-                console.error("Fetch Error:", err);
-            });
+            }).catch(err => console.error("Fetch Error:", err));
     }
 
-    function openEditPayment(sId, fName, currentMonth, curStatus) {
+    // 🌟 รับค่ารอบเวลาเรียนมาเก็บไว้ใน Modal ด้วย
+    function openEditPayment(sId, fName, currentMonth, curStatus, tSlot) {
         document.getElementById('editId').value = sId;
+        document.getElementById('editTimeSlot').value = tSlot; // จำว่ากำลังแก้รอบเวลาไหน
         document.getElementById('editName').innerText = fName;
+        document.getElementById('editTimeDisplay').innerText = "รอบเวลา: " + (tSlot || '-');
         document.getElementById('editSlip').value = '';
         document.getElementById('editDropOut').checked = false;
         if(currentMonth && currentMonth !== "-" && !currentMonth.includes('T')) document.getElementById('editMonth').value = currentMonth;
@@ -538,7 +531,7 @@
         if (isDropOut) {
             Swal.fire({
                 title: 'ยืนยันเลิกเรียน?',
-                text: "รายชื่อนี้จะถูกลบออกจากระบบเรียนพิเศษถาวร!",
+                text: "รายชื่อรอบเวลานี้จะถูกลบออกถาวร!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -548,9 +541,7 @@
             }).then((result) => {
                 if(result.isConfirmed) processPaymentUpdateToServer(true);
             });
-        } else {
-            processPaymentUpdateToServer(false);
-        }
+        } else { processPaymentUpdateToServer(false); }
     }
 
     async function processPaymentUpdateToServer(isDropOutFlag) {
@@ -560,8 +551,10 @@
         const fileInput = document.getElementById('editSlip');
         const base64Img = fileInput.files.length > 0 ? await getBase64(fileInput.files[0]) : "";
 
+        // 🌟 ส่งรอบเวลาเรียนกลับไปที่เซิร์ฟเวอร์ด้วย เพื่อให้มันแก้ข้อมูลได้ถูกแถว
         const payload = {
             studentId: document.getElementById('editId').value,
+            timeSlot: document.getElementById('editTimeSlot').value,
             paymentMonth: document.getElementById('editMonth').value,
             paymentStatus: document.querySelector('input[name="editPayStatus"]:checked').value,
             base64Slip: base64Img,
@@ -582,20 +575,14 @@
     }
 
     function fetchTkStudents() {
-        const cls = document.getElementById('filterClass').value;
-        const rm = document.getElementById('filterRoom').value;
+        const cls = document.getElementById('filterClass').value; const rm = document.getElementById('filterRoom').value;
         if (!cls) return Swal.fire('แจ้งเตือน', 'เลือกระดับชั้นก่อนครับ', 'warning');
         Swal.fire({ title: 'กำลังดึงข้อมูล...', didOpen: () => { Swal.showLoading() }});
 
         fetch(scriptURL + '?action=getStudents').then(res => res.json()).then(data => {
             const filtered = data.filter(s => s.ClassLevel === cls && (rm === "" || String(s.Room) === String(rm)));
-            const tbody = document.getElementById('tkStudentBody');
-            tbody.innerHTML = '';
-            if(filtered.length === 0) {
-                Swal.fire('ไม่พบข้อมูล', 'ไม่มีนักเรียนในห้องนี้', 'info');
-                document.getElementById('tkSearchTable').classList.add('d-none');
-                return;
-            }
+            const tbody = document.getElementById('tkStudentBody'); tbody.innerHTML = '';
+            if(filtered.length === 0) { Swal.fire('ไม่พบข้อมูล', 'ไม่มีนักเรียนในห้องนี้', 'info'); document.getElementById('tkSearchTable').classList.add('d-none'); return; }
             filtered.forEach(s => {
                 const nickTag = s.NickName ? `<span class="text-primary">(น้อง${s.NickName})</span>` : '';
                 tbody.innerHTML += `
@@ -611,84 +598,52 @@
                     </tr>
                 `;
             });
-            document.getElementById('tkSearchTable').classList.remove('d-none');
-            Swal.close();
+            document.getElementById('tkSearchTable').classList.remove('d-none'); Swal.close();
         });
     }
 
     function openRegModal(sId, fName, nName, cls, rm, tel) {
-        document.getElementById('mdlId').value = sId;
-        document.getElementById('mdlName').innerText = fName;
-        document.getElementById('mdlNick').value = nName;
-        document.getElementById('mdlClass').value = cls;
-        document.getElementById('mdlRoom').value = rm;
-        document.getElementById('mdlTel').value = tel;
+        document.getElementById('mdlId').value = sId; document.getElementById('mdlName').innerText = fName;
+        document.getElementById('mdlNick').value = nName; document.getElementById('mdlClass').value = cls;
+        document.getElementById('mdlRoom').value = rm; document.getElementById('mdlTel').value = tel;
         new bootstrap.Modal(document.getElementById('regModal')).show();
     }
 
     function confirmInternalReg() {
-        const btn = document.getElementById('btnMdlSave');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
-        btn.disabled = true;
-
+        const btn = document.getElementById('btnMdlSave'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; btn.disabled = true;
         const payload = {
-            studentId: document.getElementById('mdlId').value,
-            fullName: document.getElementById('mdlName').innerText,
-            nickName: document.getElementById('mdlNick').value,
-            classLevel: document.getElementById('mdlClass').value,
-            room: document.getElementById('mdlRoom').value,
-            studentType: 'เด็กใน ศพด.',
-            tel: document.getElementById('mdlTel').value,
-            timeSlot: document.getElementById('mdlTime').value,
-            paymentMonth: document.getElementById('mdlMonth').value,
+            studentId: document.getElementById('mdlId').value, fullName: document.getElementById('mdlName').innerText,
+            nickName: document.getElementById('mdlNick').value, classLevel: document.getElementById('mdlClass').value,
+            room: document.getElementById('mdlRoom').value, studentType: 'เด็กใน ศพด.', tel: document.getElementById('mdlTel').value,
+            timeSlot: document.getElementById('mdlTime').value, paymentMonth: document.getElementById('mdlMonth').value,
             paymentStatus: document.querySelector('input[name="mdlPayStatus"]:checked').value
         };
 
         fetch(scriptURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'action=saveSpecialStudent&data=' + encodeURIComponent(JSON.stringify(payload))
         }).then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                Swal.fire({ icon: 'success', title: 'สำเร็จ', timer: 1500, showConfirmButton: false });
-                loadSpecialStudents();
-                bootstrap.Modal.getInstance(document.getElementById('regModal')).hide();
+            if(data.status === "success") { Swal.fire({ icon: 'success', title: 'สำเร็จ', timer: 1500, showConfirmButton: false }); loadSpecialStudents(); bootstrap.Modal.getInstance(document.getElementById('regModal')).hide();
             } else Swal.fire('ผิดพลาด', data.msg, 'error');
         }).finally(() => { btn.innerHTML = 'ยืนยัน'; btn.disabled = false; });
     }
 
     async function registerExternal() {
-        const fullName = document.getElementById('exName').value.trim();
-        const classLvl = document.getElementById('exClass').value.trim();
-        const tel = document.getElementById('exTel').value.trim();
+        const fullName = document.getElementById('exName').value.trim(); const classLvl = document.getElementById('exClass').value.trim(); const tel = document.getElementById('exTel').value.trim();
         if(!fullName || !classLvl || !tel) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกช่อง * ให้ครบ', 'warning');
-
-        const btn = document.getElementById('btnExSave');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...';
-        btn.disabled = true;
+        const btn = document.getElementById('btnExSave'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> บันทึก...'; btn.disabled = true;
 
         const payload = {
-            fullName: fullName,
-            nickName: document.getElementById('exNick').value.trim(), 
-            classLevel: classLvl,
-            studentType: 'เด็กภายนอก',
-            tel: tel,
-            timeSlot: document.getElementById('exTimeSlot').value,
-            paymentMonth: document.getElementById('exMonth').value,
-            paymentStatus: document.querySelector('input[name="exPayStatus"]:checked').value
+            fullName: fullName, nickName: document.getElementById('exNick').value.trim(), classLevel: classLvl,
+            studentType: 'เด็กภายนอก', tel: tel, timeSlot: document.getElementById('exTimeSlot').value,
+            paymentMonth: document.getElementById('exMonth').value, paymentStatus: document.querySelector('input[name="exPayStatus"]:checked').value
         };
 
         fetch(scriptURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'action=saveSpecialStudent&data=' + encodeURIComponent(JSON.stringify(payload))
         }).then(res => res.json()).then(data => {
-            if(data.status === "success") {
-                Swal.fire('สำเร็จ!', 'บันทึกเด็กภายนอกเรียบร้อย', 'success');
-                document.getElementById('exName').value = ''; document.getElementById('exNick').value = '';
-                document.getElementById('exClass').value = ''; document.getElementById('exTel').value = '';
-                loadSpecialStudents();
-                bootstrap.Tab.getInstance(document.querySelector('#myTab button[data-bs-target="#list"]')).show();
+            if(data.status === "success") { Swal.fire('สำเร็จ!', 'บันทึกเด็กภายนอกเรียบร้อย', 'success'); document.getElementById('exName').value = ''; document.getElementById('exNick').value = ''; document.getElementById('exClass').value = ''; document.getElementById('exTel').value = ''; loadSpecialStudents(); bootstrap.Tab.getInstance(document.querySelector('#myTab button[data-bs-target="#list"]')).show();
             } else Swal.fire('ผิดพลาด', data.msg, 'error');
         }).finally(() => { btn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูลเด็กภายนอก'; btn.disabled = false; });
     }
